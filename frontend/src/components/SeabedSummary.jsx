@@ -26,24 +26,24 @@ export default function SeabedSummary({ commits, currentRepoId }) {
     }
 
     if (!summary) {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-      summary = `Across ${commits.length} commits, this project evolved from its initial foundation into an interactive GitHub journey. The work focused on repository exploration, pixel-art ocean design, accessible swim navigation, detailed change inspection, and a prepared Gemini summary flow.`;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      summary = `You've reached the ocean floor.\n\nWhat began as a few scattered shells slowly became a living reef. Small fixes strengthened the currents, new creatures appeared, forgotten paths were rediscovered, and the project learned to breathe on its own.\n\nEvery commit left a footprint beneath the waves. Together they became the story of this repository.`;
     }
 
     setSummaryText(summary);
     setLoading(false);
   };
 
-  const finalMeters = commits.length * 40;
+  const finalMeters = (commits.length || 1) * 50;
 
   return (
     <section className="gemini-zone seabed-summary">
       <span className="gemini-star">✦</span>
-      <p className="eyebrow">// FINAL DEPTH · <span id="finalDepth">{finalMeters} M</span></p>
+      <p className="eyebrow">// DEEPEST OCEAN FLOOR · <span id="finalDepth">{finalMeters} M</span></p>
       <h2>BENEATH THE OCEAN</h2>
       <p>
-        You reached the end of the repository. Send every commit and change to your Google Gemini
-        integration for one complete project summary.
+        You've reached the deepest point of your expedition after replaying the repository's history.
+        Reflect on the memories left behind as the ocean reveals the true story of this codebase.
       </p>
       <button
         className="primary-button"
@@ -51,14 +51,18 @@ export default function SeabedSummary({ commits, currentRepoId }) {
         onClick={handleSummarize}
         disabled={loading}
       >
-        {loading ? '✦ GEMINI IS EXPLORING…' : summaryText ? '✦ SUMMARY COMPLETE' : '✦ SUMMARIZE EVERYTHING'}
+        {loading
+          ? '✦ LISTENING TO THE DEEP OCEAN…'
+          : summaryText
+          ? '✦ STORY UNVEILED'
+          : '✦ REVEAL OCEAN CHRONICLE'}
       </button>
-      <small>FRONTEND DEMO · CONNECT YOUR GOOGLE API ENDPOINT HERE</small>
+      <small>UNDERWATER EXPEDITION COMPLETE · GOOGLE GEMINI NARRATOR</small>
 
       {summaryText && (
         <div className="summary-output" id="summaryOutput">
-          <span>GEMINI SUMMARY</span>
-          <p id="summaryText">{summaryText}</p>
+          <span>✦ OCEAN FLOOR CHRONICLE</span>
+          <p id="summaryText" style={{ whitespace: 'pre-line' }}>{summaryText}</p>
         </div>
       )}
     </section>

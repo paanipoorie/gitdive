@@ -350,16 +350,16 @@ async function summarizeWithGemini(commitHistory) {
     }
   }
 
-  await new Promise(resolve => setTimeout(resolve, 900));
-  return `Across ${commitHistory.length} commits, this project evolved from its initial foundation into an interactive GitHub journey. The work focused on repository exploration, pixel-art ocean design, accessible swim navigation, detailed change inspection, and a prepared Gemini summary flow.`;
+  await new Promise(resolve => setTimeout(resolve, 800));
+  return `You've reached the ocean floor.\n\nWhat began as a few scattered shells slowly became a living reef. Small fixes strengthened the currents, new creatures appeared, forgotten paths were rediscovered, and the project learned to breathe on its own.\n\nEvery commit left a footprint beneath the waves. Together they became the story of this repository.`;
 }
 
 $('#summarizeButton').addEventListener('click', async () => {
   const button = $('#summarizeButton');
   button.disabled = true;
-  button.textContent = '✦ GEMINI IS EXPLORING…';
+  button.textContent = '✦ LISTENING TO THE DEEP OCEAN…';
 
   $('#summaryText').textContent = await summarizeWithGemini(commits);
   $('#summaryOutput').hidden = false;
-  button.textContent = '✦ SUMMARY COMPLETE';
+  button.textContent = '✦ STORY UNVEILED';
 });

@@ -147,7 +147,8 @@ export default function ExplorerApp() {
   const [isExpeditionActive, setIsExpeditionActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [activeCommitIndex, setActiveCommitIndex] = useState(0);
+  const [closestCommitIndex, setClosestCommitIndex] = useState(0);
+  const [expandedCommitIndex, setExpandedCommitIndex] = useState(null);
   const [summaryCache, setSummaryCache] = useState({});
 
   const handleSaveSummary = (sha, text) => {
@@ -157,7 +158,7 @@ export default function ExplorerApp() {
   };
 
   const containerRef = useRef(null);
-  const observerRef = useRef(null);
+  const pauseTimerRef = useRef(null);
 
   const fetchRepositoryCommits = async (repoUrl) => {
     try {
@@ -259,41 +260,77 @@ export default function ExplorerApp() {
     setErrorMsg('');
   };
 
-  // Setup IntersectionObserver for active commit bubble tracking
+  // Diver proximity calculation & single bubble arrival/departure rhythm
   useEffect(() => {
     if (!isExpeditionActive || commits.length === 0) return;
 
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
+    const calculateClosestCommit = () => {
+      const bubbleElements = document.querySelectorAll('.framer-commit-bubble');
+      if (!bubbleElements || bubbleElements.length === 0) return;
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number(entry.target.getAttribute('data-index'));
-            if (!isNaN(index)) {
-              setActiveCommitIndex(index);
-            }
+      const diverViewportY = window.innerHeight * 0.30 + 95; // Diver position centered at sticky 30vh
+
+      let minDistance = Infinity;
+      let closestIdx = 0;
+
+      bubbleElements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const bubbleCenterY = rect.top + rect.height / 2;
+        const dist = Math.abs(bubbleCenterY - diverViewportY);
+
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestIdx = Number(el.getAttribute('data-index')) || 0;
+        }
+      });
+
+      setClosestCommitIndex((prevClosest) => {
+        if (prevClosest !== closestIdx) {
+          // Collapse previous bubble immediately & interrupt ongoing animation
+          setExpandedCommitIndex(null);
+
+          if (pauseTimerRef.current) {
+            clearTimeout(pauseTimerRef.current);
           }
-        });
-      },
-      { rootMargin: '-38% 0px -38% 0px', threshold: 0.1 }
-    );
 
-    const bubbleElements = document.querySelectorAll('.framer-commit-bubble');
-    bubbleElements.forEach((el) => observerRef.current.observe(el));
+          // Arrival pause (~400ms) before expanding new bubble
+          pauseTimerRef.current = setTimeout(() => {
+            setExpandedCommitIndex(closestIdx);
+          }, 400);
+
+          return closestIdx;
+        }
+        return prevClosest;
+      });
+    };
+
+    // Initial check
+    calculateClosestCommit();
+
+    // Trigger initial expansion pause timer for the starting commit
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    pauseTimerRef.current = setTimeout(() => {
+      setExpandedCommitIndex(0);
+    }, 400);
+
+    const handleScroll = () => {
+      calculateClosestCommit();
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
+      window.removeEventListener('scroll', handleScroll);
+      if (pauseTimerRef.current) {
+        clearTimeout(pauseTimerRef.current);
       }
     };
   }, [isExpeditionActive, commits]);
 
-  const depthMeters = (activeCommitIndex + 1) * 40;
-  const progressPercent = commits.length ? ((activeCommitIndex + 1) / commits.length) * 100 : 0;
-  const oceanMinHeight = Math.max(5700, commits.length * 420);
+  const depthMeters = (closestCommitIndex + 1) * 50;
+  const progressPercent = commits.length ? ((closestCommitIndex + 1) / commits.length) * 100 : 0;
+  // Calculate dynamic ocean height tightly matching commit bubbles + small gap to seabed summary
+  const oceanMinHeight = commits.length ? 340 + commits.length * 390 + 60 : 1800;
 
   return (
     <>
@@ -337,7 +374,7 @@ export default function ExplorerApp() {
               diverSrc={diverSrc}
               depthMeters={depthMeters}
               isPaused={true}
-              activeHash={commits[activeCommitIndex]?.hash}
+              activeHash={commits[closestCommitIndex]?.hash}
             />
 
             <div className="commit-bubbles" id="commitBubbles">
@@ -348,7 +385,7 @@ export default function ExplorerApp() {
                     key={sha || idx}
                     commit={commit}
                     index={idx}
-                    isActive={idx === activeCommitIndex}
+                    isActive={idx === expandedCommitIndex}
                     currentRepoId={currentRepoId}
                     cachedSummary={summaryCache[sha]}
                     onSaveSummary={handleSaveSummary}
@@ -359,7 +396,7 @@ export default function ExplorerApp() {
 
             <div className="descent-start">
               <span>↓</span>
-              <p>SCROLL TO DIVE THROUGH EVERY COMMIT</p>
+              <p>SCROLL TO DIVE THROUGH ANCIENT MEMORIES</p>
             </div>
           </div>
 

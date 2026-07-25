@@ -49,14 +49,28 @@ async function generateRepoSummary(repoInfo, recentCommits = []) {
 }
 
 function fallbackCommitSummary(commit) {
-  const fileCount = commit.files ? commit.files.length : 0;
-  const filesStr = fileCount > 0 ? ` (modified ${fileCount} file${fileCount > 1 ? 's' : ''})` : '';
-  return `Commit "${commit.message}"${filesStr}. Work focused on application improvements and feature updates.`;
+  const msg = (commit.message || '').toLowerCase();
+  if (msg.includes('init') || msg.includes('foundation') || msg.includes('setup')) {
+    return 'The journey began at the surface. Fresh seabed foundations were laid down, dropping anchor for all future exploration to build upon.';
+  }
+  if (msg.includes('auth') || msg.includes('user') || msg.includes('login')) {
+    return 'The reef became calmer here. The authentication currents finally settled, making everything downstream swim much more smoothly.';
+  }
+  if (msg.includes('route') || msg.includes('nav') || msg.includes('flow')) {
+    return 'A new current appeared, giving future explorers a clear route through the project.';
+  }
+  if (msg.includes('style') || msg.includes('design') || msg.includes('ocean') || msg.includes('pixel')) {
+    return 'Bioluminescent colors illuminated the waters. The surrounding corals and light rays bloomed with fresh vibrancy.';
+  }
+  if (msg.includes('fix') || msg.includes('repair') || msg.includes('bug')) {
+    return 'A slight turbulence near the rocks was smoothed out. The waters cleared, allowing future creatures to drift without friction.';
+  }
+  return 'A quiet memory settled onto the reef. Gentle ripples spread across the surrounding waters, helping the project find its natural rhythm.';
 }
 
 function fallbackRepoSummary(repoInfo, recentCommits = []) {
-  const name = repoInfo.fullName || repoInfo.name || 'Repository';
-  return `Across ${recentCommits.length} recorded commits, ${name} evolved from initial setup through core feature development to final application polish.`;
+  const name = repoInfo.fullName || repoInfo.name || 'this repository';
+  return `You've reached the ocean floor of ${name}.\n\nWhat began as a few scattered shells slowly became a living reef. Small fixes strengthened the currents, new creatures appeared, forgotten paths were rediscovered, and the project learned to breathe on its own.\n\nEvery commit left a footprint beneath the waves. Together they became the story of this repository.`;
 }
 
 module.exports = {

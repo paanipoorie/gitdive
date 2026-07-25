@@ -987,7 +987,7 @@ footer a {
   position: relative;
   width: min(420px, 34vw);
   min-height: 330px;
-  margin-bottom: 115px;
+  margin-bottom: 230px;
   display: flex;
   align-items: flex-start;
   outline: 0;
@@ -1077,8 +1077,8 @@ footer a {
   z-index: 12;
   margin-top: 0 !important;
   max-width: none !important;
-  min-height: 720px;
-  padding: 150px max(20px, calc((100vw - 900px)/2)) !important;
+  min-height: 520px;
+  padding: 70px max(20px, calc((100vw - 900px)/2)) 100px !important;
   background: radial-gradient(circle at 50% 10%, rgba(105, 75, 188, .22), transparent 45%), linear-gradient(#010817, #010611) !important;
   border: 0 !important;
   border-top: 1px solid #6352a5 !important
@@ -1087,10 +1087,10 @@ footer a {
 .seabed-summary::before {
   content: "";
   position: absolute;
-  top: -90px;
+  top: -40px;
   left: 0;
   right: 0;
-  height: 100px;
+  height: 45px;
   background: linear-gradient(170deg, transparent 48%, #010817 49%)
 }
 
@@ -1162,7 +1162,7 @@ footer a {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-bottom: 120px;
+  margin-bottom: 230px;
   outline: none;
   box-sizing: border-box;
 }

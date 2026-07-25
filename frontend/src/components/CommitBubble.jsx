@@ -80,10 +80,21 @@ export default function CommitBubble({
 
       if (!resultSummary) {
         // Fallback for demo / mock mode without backend connection
-        await new Promise((resolve) => setTimeout(resolve, 800));
-        resultSummary = `This commit introduced ${commit.title.toLowerCase()}. It updated ${
-          commit.files.length
-        } file(s) including ${commit.files.slice(0, 2).join(', ')}, refining codebase quality and overall app execution.`;
+        await new Promise((resolve) => setTimeout(resolve, 600));
+        const msg = (commit.title || commit.description || '').toLowerCase();
+        if (msg.includes('init') || msg.includes('foundation') || msg.includes('setup')) {
+          resultSummary = 'The journey began at the surface. Fresh seabed foundations were laid down, dropping anchor for all future exploration to build upon.';
+        } else if (msg.includes('auth') || msg.includes('user') || msg.includes('login')) {
+          resultSummary = 'The reef became calmer here. The authentication currents finally settled, making everything downstream swim much more smoothly.';
+        } else if (msg.includes('route') || msg.includes('nav') || msg.includes('flow')) {
+          resultSummary = 'A new current appeared, giving future explorers a clear route through the project.';
+        } else if (msg.includes('style') || msg.includes('design') || msg.includes('ocean') || msg.includes('pixel')) {
+          resultSummary = 'Bioluminescent colors illuminated the waters. The surrounding corals and light rays bloomed with fresh vibrancy.';
+        } else if (msg.includes('fix') || msg.includes('repair') || msg.includes('bug')) {
+          resultSummary = 'A slight turbulence near the rocks was smoothed out. The waters cleared, allowing future creatures to drift without friction.';
+        } else {
+          resultSummary = 'A quiet memory settled onto the reef. Gentle ripples spread across the surrounding waters, helping the project find its natural rhythm.';
+        }
       }
 
       setLocalSummary(resultSummary);
@@ -201,16 +212,16 @@ export default function CommitBubble({
                   <div className="ai-box-header">
                     <div className="ai-title-left">
                       <span className="ai-star-sparkle">✦</span>
-                      <span>GEMINI AI INSIGHT</span>
+                      <span>MEMORY NARRATION</span>
                     </div>
                     <button
                       type="button"
                       className="ai-regenerate-btn"
                       onClick={() => handleFetchSummary(true)}
                       disabled={loading}
-                      title="Generate a fresh summary from Gemini"
+                      title="Generate a fresh story from the underwater narrator"
                     >
-                      {loading ? 'Analyzing…' : '✨ Regenerate'}
+                      {loading ? 'Listening…' : '✨ Re-narrate'}
                     </button>
                   </div>
                   <p className="ai-summary-body">{activeSummary}</p>
@@ -219,7 +230,7 @@ export default function CommitBubble({
                 <div className="capsule-ai-box ai-box-loading">
                   <div className="ai-loading-pulse">
                     <span className="pulse-icon spinner">✦</span>
-                    <span className="pulse-text">Analyzing with Gemini...</span>
+                    <span className="pulse-text">Listening to the waves...</span>
                     <div className="pulse-dots">
                       <motion.span
                         animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
@@ -239,7 +250,7 @@ export default function CommitBubble({
               ) : error ? (
                 <div className="capsule-ai-box ai-box-error">
                   <div className="ai-error-content">
-                    <span>⚠️ Couldn't generate a summary.</span>
+                    <span>⚠️ Couldn't retrieve memory story.</span>
                     <button
                       type="button"
                       className="ai-retry-btn"
@@ -257,7 +268,7 @@ export default function CommitBubble({
                     onClick={() => handleFetchSummary(false)}
                   >
                     <span className="ai-sparkle-icon">✨</span>
-                    <span>Explain this Commit</span>
+                    <span>Uncover Memory Story</span>
                   </button>
                 </div>
               )}
