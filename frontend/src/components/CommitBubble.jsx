@@ -79,22 +79,9 @@ export default function CommitBubble({
       }
 
       if (!resultSummary) {
-        // Fallback for demo / mock mode without backend connection
-        await new Promise((resolve) => setTimeout(resolve, 600));
-        const msg = (commit.title || commit.description || '').toLowerCase();
-        if (msg.includes('init') || msg.includes('foundation') || msg.includes('setup')) {
-          resultSummary = 'The journey began at the surface. Fresh seabed foundations were laid down, dropping anchor for all future exploration to build upon.';
-        } else if (msg.includes('auth') || msg.includes('user') || msg.includes('login')) {
-          resultSummary = 'The reef became calmer here. The authentication currents finally settled, making everything downstream swim much more smoothly.';
-        } else if (msg.includes('route') || msg.includes('nav') || msg.includes('flow')) {
-          resultSummary = 'A new current appeared, giving future explorers a clear route through the project.';
-        } else if (msg.includes('style') || msg.includes('design') || msg.includes('ocean') || msg.includes('pixel')) {
-          resultSummary = 'Bioluminescent colors illuminated the waters. The surrounding corals and light rays bloomed with fresh vibrancy.';
-        } else if (msg.includes('fix') || msg.includes('repair') || msg.includes('bug')) {
-          resultSummary = 'A slight turbulence near the rocks was smoothed out. The waters cleared, allowing future creatures to drift without friction.';
-        } else {
-          resultSummary = 'A quiet memory settled onto the reef. Gentle ripples spread across the surrounding waters, helping the project find its natural rhythm.';
-        }
+        setError(true);
+        setLoading(false);
+        return;
       }
 
       setLocalSummary(resultSummary);

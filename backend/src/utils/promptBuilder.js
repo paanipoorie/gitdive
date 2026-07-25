@@ -15,23 +15,68 @@ ${diffText ? `Diff snippet:\n${diffText.substring(0, 1500)}` : ''}
 Output ONLY the 2-3 sentence ocean narrative summary.`;
 }
 
-function buildRepoSummaryPrompt(repoInfo, recentCommits = []) {
-  const commitSummaries = recentCommits.map(c => `- ${c.message}`).join('\n');
-  return `You are a friendly ocean expedition narrator reaching the deepest seabed floor of a repository's underwater journey.
+function buildRepoSummaryPrompt(repoInfo, readmeOrCommits = '', chronologicalCommits = []) {
+  let readmeText = '';
+  let commits = [];
 
-Generate an emotional, atmospheric narrative (3-5 sentences) summarizing the full expedition of this repository.
+  if (Array.isArray(readmeOrCommits)) {
+    commits = readmeOrCommits;
+  } else if (typeof readmeOrCommits === 'string') {
+    readmeText = readmeOrCommits;
+    commits = Array.isArray(chronologicalCommits) ? chronologicalCommits : [];
+  } else if (readmeOrCommits && typeof readmeOrCommits === 'object') {
+    readmeText = readmeOrCommits.readme || '';
+    commits = readmeOrCommits.commits || [];
+  }
 
-CRITICAL RULES:
-1. It MUST feel like reaching the deepest ocean floor after diving through history.
-2. Describe how the project evolved from early foundations to a flourishing reef, highlighting growth and turning points.
-3. Avoid dry technical jargon, file lists, or raw stats. Use rich marine metaphors (scattered shells, living reefs, clearing currents, deep ocean paths).
-4. End on an uplifting, magical note celebrating what the developers built together beneath the waves.
+  const repoName = repoInfo.fullName || repoInfo.name || 'Repository';
+  const totalCommits = commits.length;
+  const defaultBranch = repoInfo.defaultBranch || repoInfo.default_branch || 'main';
 
-Repository Name: ${repoInfo.fullName || repoInfo.name}
-Commits History:
-${commitSummaries.substring(0, 3000)}
+  let selectedCommits = commits;
+  if (commits.length > 100) {
+    const first20 = commits.slice(0, 20);
+    const last20 = commits.slice(-20);
+    const middleStep = Math.floor((commits.length - 40) / 60);
+    const middle60 = [];
+    for (let i = 20; i < commits.length - 20; i += Math.max(1, middleStep)) {
+      if (middle60.length < 60) middle60.push(commits[i]);
+    }
+    selectedCommits = [...first20, ...middle60, ...last20];
+  }
 
-Output ONLY the emotional seabed expedition narrative.`;
+  const commitHistoryText = selectedCommits
+    .map((c, idx) => {
+      const summaryPart = c.summary ? ` (Summary: ${c.summary})` : '';
+      const datePart = c.date ? ` [${new Date(c.date).toISOString().split('T')[0]}]` : '';
+      const hashPart = c.hash ? c.hash.substring(0, 7) : `${idx + 1}`;
+      return `${idx + 1}. Commit ${hashPart}${datePart}: "${c.message}"${summaryPart}`;
+    })
+    .join('\n');
+
+  const readmeSection = readmeText
+    ? `\nREPOSITORY README:\n${readmeText.substring(0, 2000)}\n`
+    : '';
+
+  return `You are an AI expedition narrator analyzing a repository's full life story.
+
+REPOSITORY METADATA:
+- Name: ${repoName}
+- Total Commits: ${totalCommits}
+- Default Branch: ${defaultBranch}
+${readmeSection}
+CHRONOLOGICAL COMMIT HISTORY (Oldest to Newest):
+${commitHistoryText.substring(0, 8000)}
+
+NARRATIVE SPECIFICATIONS:
+1. Explain how the repository evolved over time, starting from its beginning, progressing through major additions/turning points, and reaching its current final state.
+2. Focus on engineering progress and what the project gained as it developed.
+3. Write in simple, clear English (60–120 words).
+4. Do NOT simply list filenames, commit messages, or stats like "Across 20 commits...".
+5. Do NOT invent features that are not described in the commits or README.
+6. End with exactly ONE subtle ocean metaphor near the end.
+
+Output ONLY the complete, cohesive repository story narrative.`;
 }
 
 module.exports = {

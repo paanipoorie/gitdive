@@ -48,4 +48,16 @@ describe('API Integration Tests', () => {
       expect(res.body.data).toHaveProperty('totalCommits');
     });
   });
+
+  describe('GET & POST /api/repos/:repoId/summary', () => {
+    test('returns cached repository story if present in database', async () => {
+      const { saveSummary } = require('../src/services/cacheService');
+      saveSummary('test-api-session', 'OVERALL', 'Test story narrative generated for expedition.');
+      
+      const res = await request(app).get('/api/repos/test-api-session/summary');
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.summary).toEqual('Test story narrative generated for expedition.');
+    });
+  });
 });

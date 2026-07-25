@@ -156,12 +156,45 @@ function saveSummary(repoId, commitHash = 'OVERALL', summary) {
   stmt.run(uuidv4(), repoId, commitHash, summary, Date.now());
 }
 
+function getAllCommitSummaries(repoId) {
+  const stmt = db.prepare('SELECT commit_hash, summary FROM ai_summaries WHERE repo_id = ? AND commit_hash != "OVERALL"');
+  const rows = stmt.all(repoId);
+  const map = {};
+  for (const r of rows) {
+    if (r.commit_hash) {
+      map[r.commit_hash] = r.summary;
+    }
+  }
+  return map;
+}
+
+function getChronologicalCachedCommits(repoId) {
+  const stmt = db.prepare(`
+    SELECT * FROM commits WHERE repo_id = ?
+    ORDER BY date ASC
+  `);
+  const rows = stmt.all(repoId);
+  return rows.map((r) => ({
+    hash: r.hash,
+    shortHash: r.short_hash,
+    date: r.date,
+    message: r.message,
+    author: { name: r.author_name, email: r.author_email },
+    files: JSON.parse(r.files || '[]'),
+    additions: r.additions,
+    deletions: r.deletions,
+  }));
+}
+
 module.exports = {
   getRepoByUrl,
   getRepoById,
   saveRepo,
   getCachedCommits,
+  getChronologicalCachedCommits,
   saveCommits,
   getCachedSummary,
+  getAllCommitSummaries,
   saveSummary,
 };
+
