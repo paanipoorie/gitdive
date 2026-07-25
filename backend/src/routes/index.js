@@ -5,6 +5,8 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
+const MODELS_TO_TRY = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -20,49 +22,32 @@ router.get('/debug/gemini', async (req, res) => {
   }
 
   const prompt = 'Reply ONLY with: HELLO OCEAN';
-  logger.info('---------------------------------');
-  logger.info('[Gemini]');
-  logger.info('Repository: debug');
-  logger.info('Commit: debug');
-  logger.info('Model: gemini-2.5-flash');
-  logger.info('Prompt length: ' + prompt.length);
-  logger.info('Calling Gemini...');
-  logger.info('---------------------------------');
+  const ai = new GoogleGenerativeAI(apiKey);
+  let lastError = null;
 
-  try {
-    const ai = new GoogleGenerativeAI(apiKey);
-    const model = ai.getGenerativeModel({ model: 'gemini-2.5-flash' });
-    const result = await model.generateContent(prompt);
-    const text = result.response ? result.response.text().trim() : '';
+  for (const modelName of MODELS_TO_TRY) {
+    try {
+      logger.info(`[Debug Gemini] Trying model ${modelName}`);
+      const model = ai.getGenerativeModel({ model: modelName });
+      const result = await model.generateContent(prompt);
+      const text = result.response ? result.response.text().trim() : '';
 
-    logger.info('---------------------------------');
-    logger.info('Response received');
-    logger.info('Token usage: ' + JSON.stringify(result.response.usageMetadata || 'not available'));
-    logger.info('Finish reason: ' + JSON.stringify(result.response.candidates?.[0]?.finishReason || 'not available'));
-    logger.info('---------------------------------');
-    logger.info('Response: ' + text);
-
-    res.json({
-      success: true,
-      model: 'gemini-2.5-flash',
-      prompt,
-      response: text,
-    });
-  } catch (error) {
-    logger.error('---------------------------------');
-    logger.error('Gemini error');
-    logger.error('error.message: ' + error.message);
-    logger.error('error.status: ' + (error.status || error.statusText || 'N/A'));
-    logger.error('error.stack: ' + error.stack);
-    logger.error('error.response: ' + JSON.stringify(error.response || {}));
-    logger.error('error.details: ' + JSON.stringify(error.details || error.cause || {}));
-    logger.error('---------------------------------');
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      details: error.toString(),
-    });
+      return res.json({
+        success: true,
+        model: modelName,
+        prompt,
+        response: text,
+      });
+    } catch (err) {
+      logger.warn(`[Debug Gemini] Model ${modelName} error: ${err.message}`);
+      lastError = err;
+    }
   }
+
+  return res.status(500).json({
+    success: false,
+    error: lastError ? lastError.message : 'All Gemini model fallbacks failed',
+  });
 });
 
 router.use('/repos', repoRoutes);
