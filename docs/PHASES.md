@@ -35,6 +35,28 @@ queues, websockets/streaming, Docker/deployment tooling, horizontal scaling.
   raw diffs beyond what's needed to answer a request (diffs are large; only
   extracted/summarized fields are persisted long-term).
 
+**UI/UX contract driving the API shape (per the frontend teammate's mockup):**
+The frontend renders a vertical "dive line" with one minimal bubble per commit
+along it. A bubble shows nothing but its label at rest; **on hover**, it
+expands to reveal exactly three things: **commit date**, **files changed**,
+and a **2–3 line AI summary**. This directly shapes two design decisions
+below:
+1. The timeline endpoint (Phase 4) must stay **lean** — it's rendering
+   potentially hundreds of bubbles at once, so it returns only what's needed
+   to place and label each bubble (hash, order, short label), not full diffs
+   or summaries.
+2. A separate **on-demand detail endpoint** (Phase 7) returns the three
+   hover fields together in one call, since that's exactly the payload the
+   hover interaction needs and it's fetched lazily, per-bubble, only when a
+   user actually hovers it. This is also why caching (Phase 6) is
+   introduced *before* AI (Phase 7): hover is a repeated, latency-sensitive
+   interaction, so the first hover computes the summary and every hover
+   after that (by this user or any other) is served from cache.
+
+The backend does not need to know how bubbles are drawn, positioned, or
+animated — that's entirely the frontend teammate's responsibility. The
+backend's only job is to expose the two endpoints above cleanly.
+
 ---
 
 ## Phase 0 — Project Bootstrapping & Configuration
@@ -195,13 +217,16 @@ structured list of commits.
 ## Phase 4 — Timeline Construction API
 
 **Goal:** Transform raw parsed commit data into an ordered, branch-aware
-"timeline" structure — the primary data contract for the frontend's core
-feature.
+"timeline" structure, deliberately kept **minimal per bubble** — the primary
+data contract for the frontend's core "dive line" feature.
 
 **Why it exists:** The interactive timeline is GitDive's headline feature.
 This is the API surface the frontend teammate will build against most, so it
 needs to be introduced early (right after raw data is available) and kept
-stable.
+stable. Per the frontend mockup, each commit renders as a bare, unlabeled-until-hover
+bubble along a vertical line — so this endpoint intentionally returns only
+what's needed to place and identify each bubble, not the hover content
+(that's Phase 7's job, fetched lazily).
 
 **Features to implement:**
 - `src/services/timelineService.js` — orders commits chronologically, attaches
@@ -209,15 +234,30 @@ stable.
 - `src/controllers/timelineController.js`, `src/routes/timelineRoutes.js`:
   - `GET /api/repos/:repoId/timeline` — supports query params: `branch`,
     `since`, `until`, `limit`/`cursor` for pagination.
+  - Minimal per-item response shape (deliberately excludes diff stats and
+    summaries, which are hover-only and lazy-loaded via Phase 7):
+    ```json
+    {
+      "hash": "a1b2c3d",
+      "order": 12,
+      "author": "jane-doe",
+      "branch": "main"
+    }
+    ```
 - Document the response shape in the README so the frontend teammate has a
-  stable contract to build against immediately.
+  stable contract to build against immediately, including a note that
+  `date`, `filesChanged`, and `summary` live behind the separate hover-detail
+  endpoint in Phase 7 and are fetched per-bubble on hover, not bundled here.
 
-**Expected outcome:** Frontend can fetch an ordered, filterable timeline for
-any successfully cloned/parsed repo.
+**Expected outcome:** Frontend can fetch an ordered, filterable timeline —
+lightweight enough to render hundreds of bubbles at once — for any
+successfully cloned/parsed repo.
 
 **Acceptance criteria:**
 - Timeline commits are returned in correct chronological order.
 - Filtering by branch and by date range returns the correct subset.
+- Response payload per commit excludes diff/summary data (verified by
+  checking payload size stays flat regardless of diff size).
 - Response schema is documented and doesn't change without a version note.
 
 **Files likely to change:** `src/services/timelineService.js` (new),
@@ -225,7 +265,7 @@ any successfully cloned/parsed repo.
 (new), `README.md`.
 
 **Suggested commit(s):**
-- `feat: expose repository timeline API`
+- `feat: expose minimal repository timeline API for bubble rendering`
 
 ---
 
@@ -302,48 +342,71 @@ re-trigger cloning.
 
 ---
 
-## Phase 7 — Gemini AI Integration
+## Phase 7 — Gemini AI Integration & Hover Detail Endpoint
 
 **Goal:** Send structured, well-shaped context (commit diffs, messages,
-timeline segments) to Gemini and return AI-generated explanations and
-summaries.
+timeline segments) to Gemini, and expose a single **hover-detail endpoint**
+that returns the three fields the frontend bubble needs on hover — commit
+date, files changed, and a 2–3 line AI summary — in one call.
 
 **Why it exists:** AI is the differentiating feature, but it's introduced only
 now — after timeline/stats/caching are solid — so that (a) prompts are built
 against a stable, known data shape, and (b) caching (Phase 6) is already in
-place to avoid paying for redundant API calls while iterating on prompts.
+place to avoid paying for redundant API calls on every hover. Bundling date +
+files changed + summary into one response also matches the frontend
+interaction exactly: a single hover triggers a single fetch, not three.
 
 **Features to implement:**
 - `src/services/geminiService.js` — wraps `@google/generative-ai`, handles
   API key config, retries on transient failure.
-- `src/utils/promptBuilder.js` — builds token-safe prompts (truncates large
-  diffs, summarizes context) from commit/timeline data.
+- `src/utils/promptBuilder.js` — builds a token-safe prompt (truncates large
+  diffs) that asks Gemini specifically for a **2–3 line summary**, matching
+  the bubble's fixed hover space.
 - `src/controllers/aiController.js`, `src/routes/aiRoutes.js`:
-  - `POST /api/repos/:repoId/commits/:hash/explain` — AI explanation of a
-    single commit.
+  - `GET /api/repos/:repoId/commits/:hash/detail` — the hover-trigger
+    endpoint. Combines Phase 3's already-parsed `date` and `filesChanged`
+    with a Gemini-generated `summary` (generated on first request, served
+    from cache after):
+    ```json
+    {
+      "hash": "a1b2c3d",
+      "date": "2024-03-14T10:22:00Z",
+      "filesChanged": ["src/app.js", "src/routes/repoRoutes.js"],
+      "summary": "Added repo validation route and wired it to the GitHub API. Introduces the first error-handling pattern reused later."
+    }
+    ```
   - `POST /api/repos/:repoId/summary` — AI narrative summary of the repo's
-    evolution.
-- Persist AI responses in the `ai_summaries` table (Phase 6 schema) so repeat
-  requests don't re-call the API.
-- Simple in-memory rate limiting on these two endpoints specifically (they're
-  the expensive ones).
+    overall evolution (separate, coarser-grained feature, not part of the
+    per-bubble hover flow).
+- Persist AI responses in the `ai_summaries` table (Phase 6 schema), keyed by
+  commit hash, so repeat hovers — by the same or a different user — never
+  re-call Gemini for a commit that's already been summarized.
+- Simple in-memory rate limiting on `/detail` and `/summary` specifically
+  (they're the expensive ones); `/detail` in particular should be allowed a
+  higher burst limit than `/summary` since hovering quickly across several
+  bubbles is normal usage, not abuse.
 
-**Expected outcome:** Users get AI-generated, grounded explanations of commits
-and repo history, with costs controlled via caching.
+**Expected outcome:** Hovering a bubble on the frontend resolves to one fast
+API call that returns exactly the three fields the UI displays, with AI cost
+controlled via per-commit caching.
 
 **Acceptance criteria:**
-- Requesting an explanation for a known commit returns a coherent explanation
-  referencing that commit's actual message/diff content.
-- A second identical request is served from the cache, not a new Gemini call.
+- `GET /commits/:hash/detail` for a known commit returns `date`,
+  `filesChanged`, and a `summary` of roughly 2–3 sentences grounded in that
+  commit's actual message/diff content.
+- A second request for the same commit's detail is served from cache (no new
+  Gemini call), and is noticeably faster than the first.
 - Missing/invalid `GEMINI_API_KEY` produces a clear runtime error on the
-  affected endpoints — it does not crash the whole server.
+  affected endpoints — it does not crash the whole server, and `date`/
+  `filesChanged` degrade gracefully (still returned) even if `summary`
+  generation fails.
 
 **Files likely to change:** `src/services/geminiService.js` (new),
 `src/utils/promptBuilder.js` (new), `src/controllers/aiController.js` (new),
 `src/routes/aiRoutes.js` (new), `.env.example` (add `GEMINI_API_KEY`).
 
 **Suggested commit(s):**
-- `feat: integrate Gemini for AI-generated commit and repository explanations`
+- `feat: integrate Gemini and add per-commit hover detail endpoint`
 
 ---
 
@@ -490,3 +553,8 @@ listed here so they're not accidentally designed into the MVP prematurely:
   frontend is integrating against it regularly.
 - **Branch/PR-level visualization data** — richer graph structures beyond the
   linear/branch-aware timeline in Phase 4.
+- **Pre-generated hover summaries** — instead of generating a commit's AI
+  summary on first hover, a background job could pre-generate and cache
+  summaries for all commits right after clone/parse, eliminating first-hover
+  latency entirely. Deferred from the MVP since on-demand + cache (Phase 7)
+  is simpler and already keeps repeat hovers fast.
