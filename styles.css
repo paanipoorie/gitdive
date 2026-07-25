@@ -1,0 +1,1348 @@
+/* ===== Design tokens ===== */
+:root {
+  --navy: #031631;
+  --deep: #061e46;
+  --blue: #08336c;
+  --aqua: #58e7e0;
+  --cyan: #8ffcf5;
+  --sand: #ffd37b;
+  --ink: #c9f8f2;
+  --line: rgba(118, 234, 231, .18)
+}
+
+/* ===== Base reset ===== */
+* {
+  box-sizing: border-box
+}
+
+html {
+  scroll-behavior: smooth
+}
+
+body {
+  margin: 0;
+  background: var(--navy);
+  color: #e9ffff;
+  font-family: "Space Mono", monospace;
+  overflow-x: hidden
+}
+
+/* ===== Top bar / navigation ===== */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  opacity: .16;
+  background: repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0, 0, 0, .3) 4px);
+  mix-blend-mode: soft-light
+}
+
+.topbar {
+  height: 82px;
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 5vw;
+  border-bottom: 1px solid var(--line);
+  justify-content: space-between
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: white;
+  text-decoration: none;
+  font-family: "Press Start 2P";
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: 1px
+}
+
+.logo b {
+  color: var(--aqua)
+}
+
+.logo-mark {
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--aqua);
+  transform: rotate(45deg);
+  display: grid;
+  place-items: center;
+  color: var(--sand);
+  font-size: 21px;
+  box-shadow: inset 0 0 0 3px var(--navy)
+}
+
+.logo-mark::first-letter {
+  transform: rotate(-45deg)
+}
+
+.status,
+.sound-button {
+  font-family: "Press Start 2P";
+  font-size: 7px;
+  letter-spacing: 1px
+}
+
+.status {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8fbbb9
+}
+
+.status i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #63ed9d;
+  margin-right: 8px;
+  box-shadow: 0 0 10px #63ed9d
+}
+
+.sound-button {
+  border: 1px solid var(--line);
+  background: rgba(3, 22, 49, .5);
+  color: var(--ink);
+  padding: 12px 14px;
+  cursor: pointer
+}
+
+/* ===== Hero section (landing page) ===== */
+.hero {
+  height: 100vh;
+  min-height: 720px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 100px 8vw 60px;
+  background: radial-gradient(ellipse at 65% -10%, rgba(82, 218, 240, .32), transparent 42%), linear-gradient(180deg, #083c73 0%, #061f4a 55%, #03152f 100%);
+  overflow: hidden
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 180px;
+  background: linear-gradient(170deg, transparent 34%, rgba(0, 10, 29, .65) 35% 46%, transparent 47%), linear-gradient(190deg, transparent 44%, rgba(1, 13, 34, .8) 45%);
+  opacity: .85
+}
+
+.water-light {
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(from 265deg at 66% -20%, transparent 0 8deg, rgba(113, 231, 246, .06) 9deg 13deg);
+  filter: blur(2px);
+  opacity: .75
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 3;
+  max-width: 680px
+}
+
+.eyebrow {
+  font-family: "Press Start 2P";
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: var(--aqua);
+  margin: 0 0 23px
+}
+
+.hero h1,
+.section-heading h2 {
+  font-family: "Press Start 2P";
+  font-size: clamp(34px, 5.2vw, 74px);
+  line-height: 1.23;
+  letter-spacing: -2px;
+  margin: 0;
+  text-shadow: 5px 6px 0 rgba(0, 9, 31, .65)
+}
+
+.hero h1 span,
+.section-heading h2 span {
+  color: var(--sand)
+}
+
+.intro {
+  font-size: 14px;
+  line-height: 1.9;
+  color: #aed0d4;
+  margin: 27px 0 29px
+}
+
+.primary-button {
+  font-family: "Press Start 2P";
+  font-size: 9px;
+  letter-spacing: .6px;
+  color: #031831;
+  background: var(--aqua);
+  border: 0;
+  padding: 19px 22px;
+  box-shadow: 6px 6px 0 #007e87;
+  cursor: pointer;
+  transition: .16s;
+  display: inline-flex;
+  align-items: center;
+  gap: 15px
+}
+
+.primary-button:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0 #007e87;
+  background: #89fff7
+}
+
+.arrow {
+  font-size: 17px
+}
+
+.github-icon {
+  font-size: 15px
+}
+
+.microcopy {
+  font-family: "Press Start 2P";
+  font-size: 6px;
+  letter-spacing: 1px;
+  color: #6d9b9f;
+  margin: 20px 0
+}
+
+.microcopy span {
+  color: var(--aqua);
+  margin: 0 5px
+}
+
+.hero-scene {
+  position: absolute;
+  z-index: 2;
+  right: -4vw;
+  bottom: 10vh;
+  width: 48vw;
+  height: 59vh
+}
+
+.hero-diver {
+  position: absolute;
+  width: min(39vw, 570px);
+  right: 11%;
+  top: 18%;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 15px 11px rgba(0, 0, 0, .32));
+  animation: swim 4s ease-in-out infinite
+}
+
+.creatures {
+  position: absolute;
+  width: 76%;
+  right: -12%;
+  top: -8%;
+  opacity: .53;
+  image-rendering: pixelated;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 7px #0fc);
+  animation: float 8s ease-in-out infinite
+}
+
+.commit-chip {
+  position: absolute;
+  background: rgba(3, 19, 49, .78);
+  border: 1px solid rgba(90, 232, 224, .35);
+  padding: 10px 13px;
+  color: #acd9da;
+  font-size: 9px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, .25);
+  backdrop-filter: blur(4px);
+  white-space: nowrap
+}
+
+.commit-chip span {
+  color: #63ed9d
+}
+
+.chip-one {
+  right: 6%;
+  top: 26%
+}
+
+.chip-two {
+  left: 15%;
+  top: 2%
+}
+
+.chip-three {
+  right: 27%;
+  bottom: 8%
+}
+
+/* Floating bubble decoration */
+.bubble {
+  position: absolute;
+  border: 2px solid rgba(130, 247, 238, .4);
+  border-radius: 50%;
+  animation: bubbles 5s linear infinite
+}
+
+.b1 {
+  width: 9px;
+  height: 9px;
+  left: 38%;
+  top: 20%
+}
+
+.b2 {
+  width: 15px;
+  height: 15px;
+  left: 45%;
+  top: 10%;
+  animation-delay: -2s
+}
+
+.b3 {
+  width: 6px;
+  height: 6px;
+  left: 51%;
+  top: 25%;
+  animation-delay: -4s
+}
+
+.depth-meter {
+  position: absolute;
+  right: 2.5vw;
+  top: 25%;
+  bottom: 20%;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-family: "Press Start 2P";
+  font-size: 6px;
+  color: #5f929b
+}
+
+.depth-meter i {
+  height: 1px;
+  width: 12px;
+  background: #6499a2
+}
+
+.scroll-cue {
+  position: absolute;
+  z-index: 5;
+  bottom: 27px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Press Start 2P";
+  font-size: 6px;
+  letter-spacing: 1px;
+  color: #679fa3;
+  text-decoration: none
+}
+
+.scroll-cue span {
+  color: var(--aqua);
+  font-size: 14px;
+  margin-left: 10px
+}
+
+/* ===== "How it works" section ===== */
+.how {
+  position: relative;
+  z-index: 2;
+  min-height: 760px;
+  padding: 110px 8vw;
+  background: linear-gradient(180deg, #03152f, #020d21)
+}
+
+.section-heading {
+  text-align: center
+}
+
+.section-heading h2 {
+  font-size: clamp(26px, 3.5vw, 48px)
+}
+
+.steps {
+  max-width: 1080px;
+  margin: 80px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--line)
+}
+
+.steps article {
+  position: relative;
+  padding: 48px 38px;
+  min-height: 290px;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(145deg, rgba(11, 50, 88, .55), rgba(2, 15, 36, .4))
+}
+
+.steps article:last-child {
+  border: 0
+}
+
+.steps article>b {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  font-family: "Press Start 2P";
+  font-size: 8px;
+  color: #376b76
+}
+
+.step-icon {
+  font-size: 42px;
+  color: var(--aqua);
+  height: 65px;
+  text-shadow: 0 0 16px rgba(88, 231, 224, .5)
+}
+
+.steps h3 {
+  font-family: "Press Start 2P";
+  font-size: 13px;
+  color: var(--sand);
+  margin: 23px 0 18px
+}
+
+.steps p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #7ca4aa
+}
+
+/* ===== Footer ===== */
+footer {
+  height: 80px;
+  padding: 0 6vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #010817;
+  border-top: 1px solid var(--line);
+  color: #50777b;
+  font-family: "Press Start 2P";
+  font-size: 6px;
+  letter-spacing: 1px
+}
+
+footer a {
+  color: #72aaa9;
+  text-decoration: none
+}
+
+/* ===== Animations ===== */
+@keyframes swim {
+  50% {
+    transform: translateY(14px) rotate(1deg)
+  }
+}
+
+@keyframes float {
+  50% {
+    transform: translate(-12px, 16px)
+  }
+}
+
+@keyframes float-animal {
+
+  0%,
+  100% {
+    transform: translateY(0)
+  }
+
+  50% {
+    transform: translateY(-4px)
+  }
+}
+
+@keyframes bubbles {
+  0% {
+    transform: translateY(40px);
+    opacity: 0
+  }
+
+  30% {
+    opacity: 1
+  }
+
+  100% {
+    transform: translateY(-120px);
+    opacity: 0
+  }
+}
+
+/* ===== Responsive: landing page ===== */
+@media(max-width:900px) {
+  .hero {
+    align-items: flex-start;
+    padding-top: 170px
+  }
+
+  .hero-copy {
+    z-index: 5
+  }
+
+  .hero-scene {
+    width: 70vw;
+    height: 45vh;
+    right: -9vw;
+    bottom: 2vh;
+    opacity: .65
+  }
+
+  .hero-diver {
+    width: 65vw
+  }
+
+  .creatures {
+    display: none
+  }
+
+  .commit-chip {
+    display: none
+  }
+
+  .steps {
+    grid-template-columns: 1fr
+  }
+
+  .steps article {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    min-height: 230px
+  }
+
+  .status {
+    display: none
+  }
+}
+
+@media(max-width:600px) {
+  .topbar {
+    padding: 0 20px
+  }
+
+  .hero {
+    padding: 145px 24px 80px;
+    min-height: 760px
+  }
+
+  .hero h1 {
+    font-size: 34px;
+    letter-spacing: -1px
+  }
+
+  .intro br {
+    display: none
+  }
+
+  .hero-scene {
+    width: 95vw;
+    bottom: 5vh;
+    right: -20vw;
+    height: 38vh
+  }
+
+  .hero-diver {
+    width: 88vw
+  }
+
+  .how {
+    padding: 90px 22px
+  }
+
+  .steps {
+    margin-top: 55px
+  }
+
+  footer span:nth-child(2) {
+    display: none
+  }
+
+  .sound-button {
+    font-size: 6px
+  }
+
+  .scroll-cue {
+    display: none
+  }
+}
+
+/* Respect reduced-motion preference */
+@media(prefers-reduced-motion:reduce) {
+  * {
+    scroll-behavior: auto !important
+  }
+
+  .hero-diver,
+  .creatures,
+  .bubble {
+    animation: none !important
+  }
+}
+
+/* Two-page repository explorer */
+.primary-button {
+  text-decoration: none
+}
+
+.landing-cta {
+  text-align: center;
+  margin-top: 55px
+}
+
+.back-link {
+  font-family: "Press Start 2P";
+  font-size: 7px;
+  color: var(--aqua);
+  text-decoration: none
+}
+
+.explorer-page {
+  background: #020b1c
+}
+
+.explorer-nav {
+  position: relative;
+  background: #03142e
+}
+
+.explorer-main {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 50% 0, rgba(25, 118, 153, .25), transparent 48%), #020b1c
+}
+
+/* ===== Repository gate (explorer entry screen) ===== */
+.repo-gate {
+  max-width: 1000px;
+  margin: auto;
+  padding: 100px 40px 120px;
+  text-align: center
+}
+
+.repo-gate h1,
+.gemini-zone h2 {
+  font-family: "Press Start 2P"
+}
+
+.repo-gate h1 {
+  font-size: clamp(30px, 5vw, 58px);
+  margin: 0 0 24px;
+  text-shadow: 5px 5px #010814
+}
+
+.repo-gate>p:not(.eyebrow) {
+  color: #8bb2b5
+}
+
+.repo-gate form {
+  max-width: 800px;
+  margin: 48px auto 50px;
+  text-align: left
+}
+
+.repo-gate label {
+  display: block;
+  font-family: "Press Start 2P";
+  font-size: 7px;
+  color: #6e9da2;
+  margin-bottom: 12px
+}
+
+.repo-input {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  background: #041a3b;
+  border: 1px solid #327883;
+  box-shadow: 8px 8px #010817
+}
+
+.repo-input>span {
+  display: grid;
+  place-items: center;
+  color: var(--aqua)
+}
+
+.repo-input input {
+  min-width: 0;
+  padding: 20px 5px;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  color: white;
+  font: 13px "Space Mono"
+}
+
+.repo-input button {
+  border: 0;
+  background: var(--aqua);
+  color: #031831;
+  padding: 0 20px;
+  font: 7px "Press Start 2P";
+  cursor: pointer
+}
+
+.repo-gate form>small {
+  display: block;
+  min-height: 16px;
+  margin-top: 15px;
+  color: var(--sand);
+  font: 6px "Press Start 2P"
+}
+
+/* Diver character picker */
+.diver-picker {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: stretch
+}
+
+.diver-picker>span {
+  align-self: center;
+  margin-right: 15px;
+  font: 6px "Press Start 2P";
+  color: #668f94
+}
+
+.diver-picker button {
+  width: 130px;
+  padding: 10px;
+  background: #031632;
+  border: 1px solid var(--line);
+  color: #779da1;
+  font: 6px "Press Start 2P";
+  cursor: pointer
+}
+
+.diver-picker button.active {
+  border-color: var(--aqua);
+  color: var(--aqua);
+  background: #08264b
+}
+
+.diver-picker img {
+  display: block;
+  width: 100%;
+  height: 62px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  margin-bottom: 9px
+}
+
+/* ===== Gemini summary panel ===== */
+.gemini-zone {
+  max-width: 950px;
+  margin: 90px auto 0;
+  text-align: center;
+  padding: 60px;
+  border: 1px solid #735fc0;
+  background: radial-gradient(circle at top, rgba(104, 78, 180, .3), transparent 60%), #07142f
+}
+
+.gemini-star {
+  font-size: 40px;
+  color: #b8a1ff
+}
+
+.gemini-zone h2 {
+  font-size: clamp(25px, 4vw, 42px);
+  color: var(--sand)
+}
+
+.gemini-zone>p:not(.eyebrow) {
+  color: #96b9bb;
+  line-height: 1.7
+}
+
+.gemini-zone>small {
+  display: block;
+  margin-top: 20px;
+  color: #5f7189;
+  font: 5px "Press Start 2P"
+}
+
+.summary-output {
+  text-align: left;
+  margin-top: 35px;
+  padding: 24px;
+  border: 1px solid #7862c2;
+  background: #090f2c
+}
+
+.summary-output span {
+  font: 6px "Press Start 2P";
+  color: #bba7ff
+}
+
+.summary-output p {
+  line-height: 1.7;
+  color: #bdd6d5
+}
+
+/* ===== Responsive: repository gate ===== */
+@media(max-width:850px) {
+  .repo-gate {
+    padding: 80px 18px
+  }
+
+  .diver-picker {
+    flex-wrap: wrap
+  }
+
+  .diver-picker>span {
+    width: 100%;
+    margin: 0
+  }
+
+  .repo-input {
+    grid-template-columns: 38px 1fr
+  }
+
+  .repo-input button {
+    grid-column: 1/-1;
+    padding: 17px
+  }
+
+  .gemini-zone {
+    padding: 40px 18px
+  }
+}
+
+/* Vertical scroll descent */
+/* ===== Vertical scroll descent (commit timeline) ===== */
+.vertical-expedition {
+  background: #020b1c
+}
+
+.dive-header {
+  position: sticky;
+  top: 0;
+  z-index: 18;
+  height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 35px;
+  padding: 0 5vw;
+  background: #021027e8;
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px)
+}
+
+.dive-header>div:first-child {
+  flex: 1
+}
+
+.dive-header small {
+  display: block;
+  font: 5px "Press Start 2P";
+  color: #658f94;
+  margin-bottom: 8px
+}
+
+.dive-header h2 {
+  font: 13px "Press Start 2P";
+  color: var(--sand);
+  margin: 0
+}
+
+.dive-header>div:nth-child(2) {
+  text-align: center
+}
+
+.dive-header>div:nth-child(2) b {
+  display: block;
+  font: 18px "Press Start 2P";
+  color: var(--aqua)
+}
+
+.dive-header button {
+  background: transparent;
+  border: 1px solid #356d78;
+  color: #80a8aa;
+  padding: 11px;
+  font: 6px "Press Start 2P";
+  cursor: pointer
+}
+
+/* Scrolling ocean backdrop */
+.ocean-descent {
+  position: relative;
+  min-height: 5700px;
+  overflow: clip;
+  background: linear-gradient(180deg, #0b467e 0%, #072f62 12%, #061f49 38%, #03142f 70%, #010817 100%)
+}
+
+.ocean-descent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-conic-gradient(from 267deg at 50% 0, transparent 0 10deg, rgba(123, 235, 240, .045) 11deg 15deg);
+  pointer-events: none
+}
+
+.surface-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  background: radial-gradient(ellipse at 50% 0, rgba(138, 243, 249, .4), transparent 58%)
+}
+
+.depth-rail {
+  position: absolute;
+  z-index: 5;
+  top: 220px;
+  bottom: 180px;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  background: rgba(67, 146, 163, .3)
+}
+
+.depth-rail span {
+  display: block;
+  width: 100%;
+  height: 0;
+  background: var(--aqua);
+  box-shadow: 0 0 13px var(--aqua);
+  transition: height .5s
+}
+
+/* Diver that tracks scroll position */
+.sticky-diver {
+  position: sticky;
+  z-index: 10;
+  top: 30vh;
+  margin-left: calc(50% - 118px);
+  width: 236px;
+  height: 190px;
+  pointer-events: none
+}
+
+.sticky-diver img {
+  position: absolute;
+  width: 230px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 12px 10px #0009);
+  animation: swim 2.8s ease-in-out infinite
+}
+
+.depth-label {
+  position: absolute;
+  z-index: 3;
+  top: -23px;
+  left: 92px;
+  padding: 7px 9px;
+  background: #03142edb;
+  border: 1px solid #327786;
+  color: var(--aqua);
+  font: 6px "Press Start 2P"
+}
+
+.bubble-trail {
+  position: absolute;
+  right: 8px;
+  top: -45px;
+  color: #83eee8;
+  font-size: 19px;
+  line-height: 1.2;
+  animation: bubbles 4s linear infinite
+}
+
+.timeline-cable {
+  position: absolute;
+  left: 116px;
+  top: 134px;
+  height: 125px;
+  border-left: 3px dashed rgba(83, 231, 224, .72);
+  filter: drop-shadow(0 0 5px var(--aqua))
+}
+
+/* Commit bubble list */
+.commit-bubbles {
+  position: absolute;
+  z-index: 8;
+  top: 340px;
+  left: 0;
+  right: 0
+}
+
+.commit-bubble {
+  position: relative;
+  width: min(420px, 34vw);
+  min-height: 330px;
+  margin-bottom: 115px;
+  display: flex;
+  align-items: flex-start;
+  outline: 0;
+  transition: .35s
+}
+
+.bubble-left {
+  margin-left: 8vw
+}
+
+.bubble-right {
+  margin-left: auto;
+  margin-right: 8vw
+}
+
+.tiny-bubbles {
+  position: absolute;
+  top: -35px;
+  right: 10%;
+  color: #7de5df;
+  font-size: 15px;
+  font-style: normal
+}
+
+.bubble-left .tiny-bubbles {
+  right: auto;
+  left: 10%
+}
+
+.descent-start {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #8ee8e2
+}
+
+.descent-start span {
+  font-size: 30px
+}
+
+.descent-start p {
+  font: 6px "Press Start 2P";
+  letter-spacing: 1px
+}
+
+/* Background creatures */
+.creature-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden
+}
+
+.creature-layer img {
+  position: absolute;
+  width: 520px;
+  image-rendering: pixelated;
+  opacity: .48;
+  filter: drop-shadow(0 0 7px #00b6bd);
+  animation: float 8s ease-in-out infinite
+}
+
+.creatures-one {
+  top: 850px;
+  right: -110px
+}
+
+.creatures-two {
+  top: 2550px;
+  left: -150px;
+  transform: scaleX(-1);
+  animation-delay: -3s !important
+}
+
+.creatures-three {
+  top: 4100px;
+  right: -100px;
+  animation-delay: -6s !important
+}
+
+/* Transition into the Gemini summary panel */
+.seabed-summary {
+  position: relative;
+  z-index: 12;
+  margin-top: 0 !important;
+  max-width: none !important;
+  min-height: 720px;
+  padding: 150px max(20px, calc((100vw - 900px)/2)) !important;
+  background: radial-gradient(circle at 50% 10%, rgba(105, 75, 188, .22), transparent 45%), linear-gradient(#010817, #010611) !important;
+  border: 0 !important;
+  border-top: 1px solid #6352a5 !important
+}
+
+.seabed-summary::before {
+  content: "";
+  position: absolute;
+  top: -90px;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(170deg, transparent 48%, #010817 49%)
+}
+
+/* ===== Responsive: vertical descent ===== */
+@media(max-width:800px) {
+  .ocean-descent {
+    min-height: 5350px
+  }
+
+  .dive-header {
+    padding: 0 14px
+  }
+
+  .dive-header h2 {
+    font-size: 8px
+  }
+
+  .dive-header>div:nth-child(2) {
+    display: none
+  }
+
+  .commit-bubble {
+    width: 72vw;
+    min-height: 315px
+  }
+
+  .bubble-left {
+    margin-left: 3vw
+  }
+
+  .bubble-right {
+    margin-right: 3vw
+  }
+
+  .sticky-diver {
+    top: 35vh;
+    margin-left: calc(50% - 78px);
+    width: 156px;
+    height: 130px
+  }
+
+  .sticky-diver img {
+    width: 155px
+  }
+
+  .depth-label {
+    left: 50px
+  }
+
+  .timeline-cable {
+    left: 78px;
+    top: 92px
+  }
+
+  .creature-layer img {
+    width: 350px;
+    opacity: .36
+  }
+
+  .depth-rail {
+    left: 50%
+  }
+}
+
+/* Minimal animal commit bubbles */
+/* Bubble circle showing the commit title */
+.commit-bubble.minimal-bubble {
+  width: 380px;
+  min-height: 330px;
+  align-items: center;
+  position: relative
+}
+
+.title-circle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  background: radial-gradient(circle at 32% 22%, rgba(214, 255, 252, .15), transparent 12%), rgba(10, 71, 110, .45);
+  border: 2px solid rgba(112, 235, 228, .6);
+  box-shadow: inset 0 0 25px rgba(81, 218, 217, .15), 0 0 15px rgba(49, 198, 204, .12);
+  transition: .3s
+}
+
+.title-circle h3 {
+  margin: 0;
+  color: #d9ffff;
+  font: 7px/1.6 "Press Start 2P";
+  letter-spacing: .5px;
+  text-shadow: 1px 1px #02122e
+}
+
+.minimal-bubble:hover .title-circle,
+.minimal-bubble:focus .title-circle,
+.minimal-bubble.active .title-circle {
+  border-color: #7fffff;
+  box-shadow: inset 0 0 30px rgba(78, 226, 219, .25), 0 0 20px rgba(88, 231, 224, .25);
+  transform: scale(1.08)
+}
+
+/* Detail card revealed on hover/focus/active */
+.commit-hover-detail {
+  position: absolute;
+  z-index: 12;
+  left: 200px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-12px);
+  width: 320px;
+  padding: 24px;
+  background: rgba(2, 15, 36, .98);
+  border: 2px solid var(--aqua);
+  box-shadow: 10px 10px 0 rgba(0, 4, 17, .6);
+  opacity: 0;
+  visibility: hidden;
+  transition: .2s ease;
+  pointer-events: none;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start
+}
+
+.bubble-right .commit-hover-detail {
+  left: auto;
+  right: 200px;
+  transform: translateY(-50%) translateX(12px)
+}
+
+.minimal-bubble:hover .commit-hover-detail,
+.minimal-bubble:focus .commit-hover-detail,
+.minimal-bubble.active .commit-hover-detail {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0)
+}
+
+.animal-display {
+  font-size: 48px;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(3px 3px 0 rgba(0, 10, 30, .4));
+  animation: float-animal 2s ease-in-out infinite
+}
+
+.detail-content {
+  flex: 1
+}
+
+.commit-meta {
+  display: block;
+  color: var(--sand);
+  font: 6px "Press Start 2P";
+  margin-bottom: 8px;
+  letter-spacing: .5px
+}
+
+.commit-hover-detail time {
+  display: block;
+  color: #72a7aa;
+  font-size: 7px;
+  margin-bottom: 10px
+}
+
+.commit-summary {
+  margin: 10px 0;
+  color: #b1d0d0;
+  font-size: 9px;
+  line-height: 1.55
+}
+
+.files-label {
+  display: block;
+  color: #629398;
+  font: 5px "Press Start 2P";
+  margin-top: 10px;
+  margin-bottom: 6px;
+  letter-spacing: .5px
+}
+
+.files-list {
+  margin: 0;
+  color: #86b4b6;
+  font-size: 7px;
+  line-height: 1.5
+}
+
+.minimal-bubble .tiny-bubbles {
+  top: 15px;
+  right: auto;
+  left: 125px
+}
+
+.bubble-right.minimal-bubble .tiny-bubbles {
+  left: auto;
+  right: 125px
+}
+
+/* ===== Responsive: commit bubble detail cards ===== */
+@media(max-width:800px) {
+  .commit-bubble.minimal-bubble {
+    width: 260px;
+    min-height: 315px
+  }
+
+  .title-circle {
+    width: 130px;
+    height: 130px;
+    padding: 16px
+  }
+
+  .title-circle h3 {
+    font-size: 6px
+  }
+
+  .commit-hover-detail,
+  .bubble-right .commit-hover-detail {
+    position: fixed;
+    z-index: 30;
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 14px;
+    width: auto;
+    transform: translateY(10px);
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px
+  }
+
+  .animal-display {
+    font-size: 42px
+  }
+
+  .minimal-bubble:hover .commit-hover-detail,
+  .minimal-bubble:focus .commit-hover-detail,
+  .minimal-bubble.active .commit-hover-detail {
+    transform: translateY(0)
+  }
+
+  .detail-content {
+    flex: 1
+  }
+
+  .minimal-bubble .tiny-bubbles {
+    left: 105px
+  }
+
+  .bubble-right.minimal-bubble .tiny-bubbles {
+    right: 105px
+  }
+}
