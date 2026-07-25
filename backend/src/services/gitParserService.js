@@ -2,9 +2,20 @@ const simpleGit = require('simple-git');
 const Author = require('../models/Author');
 const Commit = require('../models/Commit');
 const { getDirByRepoId } = require('../utils/tempDir');
+const { getCachedCommits, saveCommits } = require('./cacheService');
 const logger = require('../utils/logger');
 
 async function getCommits(repoId, options = {}) {
+  const page = parseInt(options.page || 1, 10);
+  const limit = parseInt(options.limit || options.perPage || 30, 10);
+
+  if (options.refresh !== 'true') {
+    const cached = getCachedCommits(repoId, { page, limit });
+    if (cached && cached.commits.length > 0) {
+      return cached;
+    }
+  }
+
   const dirEntry = getDirByRepoId(repoId);
   if (!dirEntry || !dirEntry.path) {
     const err = new Error('Repository session not found');
@@ -13,10 +24,7 @@ async function getCommits(repoId, options = {}) {
     throw err;
   }
 
-  const page = parseInt(options.page || 1, 10);
-  const limit = parseInt(options.limit || options.perPage || 30, 10);
   const skip = (page - 1) * limit;
-
   const git = simpleGit(dirEntry.path);
 
   let total = 0;
@@ -67,8 +75,16 @@ async function getCommits(repoId, options = {}) {
     });
   });
 
+  const commitObjs = commits.map(c => c.toJSON());
+
+  try {
+    saveCommits(repoId, commitObjs);
+  } catch (e) {
+    logger.warn({ err: e, repoId }, 'Failed to cache commits to SQLite');
+  }
+
   return {
-    commits: commits.map(c => c.toJSON()),
+    commits: commitObjs,
     pagination: {
       page,
       perPage: limit,

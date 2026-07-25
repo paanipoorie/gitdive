@@ -1,6 +1,8 @@
 const { parseGithubUrl } = require('../utils/validators');
 const { validateRepository, setAuthToken } = require('../services/githubService');
 const { cloneRepository } = require('../services/gitCloneService');
+const { getCommits } = require('../services/gitParserService');
+const { saveRepo, getRepoByUrl } = require('../services/cacheService');
 const { getConfig } = require('../utils/config');
 const logger = require('../utils/logger');
 
@@ -37,6 +39,7 @@ async function validateRepo(req, res, next) {
 async function cloneRepo(req, res, next) {
   try {
     const { url } = req.validatedBody;
+    const refresh = req.query.refresh === 'true';
     const parsed = parseGithubUrl(url);
 
     if (!parsed) {
@@ -46,6 +49,25 @@ async function cloneRepo(req, res, next) {
           code: 'INVALID_URL_FORMAT',
         },
       });
+    }
+
+    if (!refresh) {
+      const cached = getRepoByUrl(url);
+      if (cached && cached.temp_path) {
+        logger.info({ repoId: cached.id, repo: cached.full_name }, 'Serving cached repository');
+        return res.json({
+          success: true,
+          cached: true,
+          data: {
+            repoId: cached.id,
+            owner: cached.owner,
+            name: cached.name,
+            fullName: cached.full_name,
+            defaultBranch: cached.default_branch,
+            size: cached.size,
+          },
+        });
+      }
     }
 
     const config = getConfig();
@@ -61,10 +83,22 @@ async function cloneRepo(req, res, next) {
 
     const result = await cloneRepository(url, cloneOptions);
 
+    saveRepo({
+      id: result.repoId,
+      owner: repoData.owner,
+      name: repoData.name,
+      fullName: repoData.fullName,
+      url,
+      defaultBranch: repoData.defaultBranch,
+      size: result.size,
+      tempPath: result.tempDir,
+    });
+
     logger.info({ repoId: result.repoId, repo: repoData.fullName }, 'Repository cloned successfully');
 
     res.json({
       success: true,
+      cached: false,
       data: {
         repoId: result.repoId,
         owner: repoData.owner,
@@ -80,8 +114,6 @@ async function cloneRepo(req, res, next) {
     next(error);
   }
 }
-
-const { getCommits } = require('../services/gitParserService');
 
 async function getRepoCommits(req, res, next) {
   try {
