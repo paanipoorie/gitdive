@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 
 const TEMP_BASE = path.join(os.tmpdir(), 'gitdive');
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
