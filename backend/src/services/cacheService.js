@@ -157,7 +157,7 @@ function saveSummary(repoId, commitHash = 'OVERALL', summary) {
 }
 
 function getAllCommitSummaries(repoId) {
-  const stmt = db.prepare('SELECT commit_hash, summary FROM ai_summaries WHERE repo_id = ? AND commit_hash != "OVERALL"');
+  const stmt = db.prepare("SELECT commit_hash, summary FROM ai_summaries WHERE repo_id = ? AND commit_hash != 'OVERALL'");
   const rows = stmt.all(repoId);
   const map = {};
   for (const r of rows) {

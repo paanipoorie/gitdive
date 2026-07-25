@@ -14,7 +14,7 @@ function getAiClient() {
 
 async function generateCommitSummary(commit, diffText = '') {
   const hash = commit.hash || 'unknown';
-  logger.info({ hash, hasDiff: !!diffText }, 'Received narration request');
+  const repoName = commit.repoName || 'unknown';
 
   try {
     const ai = getAiClient();
@@ -23,41 +23,45 @@ async function generateCommitSummary(commit, diffText = '') {
       return fallbackCommitSummary(commit);
     }
 
-    const model = ai.getGenerativeModel({ model: MODEL_NAME });
     const prompt = buildCommitSummaryPrompt(commit, diffText);
 
-    logger.info({ hash, promptLength: prompt.length, model: MODEL_NAME }, 'Calling Gemini for commit summary');
+    logger.info('---------------------------------');
+    logger.info('[Gemini]');
+    logger.info('Repository: ' + repoName);
+    logger.info('Commit: ' + hash);
+    logger.info('Model: ' + MODEL_NAME);
+    logger.info('Prompt length: ' + prompt.length);
+    logger.info('Prompt text: ' + prompt.substring(0, 2000));
+    logger.info('Calling Gemini...');
+    logger.info('---------------------------------');
 
+    const model = ai.getGenerativeModel({ model: MODEL_NAME });
     const result = await model.generateContent(prompt);
     const text = result.response ? result.response.text() : '';
 
-    logger.info({ hash, responseLength: text.length }, 'Gemini response received');
-    if (text.length > 0) {
-      logger.debug({ hash, rawResponse: text.substring(0, 500) }, 'Gemini raw response (truncated)');
-    }
+    logger.info('---------------------------------');
+    logger.info('Response received');
+    logger.info('Token usage: ' + JSON.stringify(result.response.usageMetadata || 'not available'));
+    logger.info('Finish reason: ' + JSON.stringify(result.response.candidates?.[0]?.finishReason || 'not available'));
+    logger.info('Response text: ' + (text ? text.substring(0, 500) : '(empty)'));
+    logger.info('---------------------------------');
 
     const trimmed = text ? text.trim() : '';
     if (!trimmed) {
       throw new Error('Gemini returned empty response');
     }
 
-    logger.info({ hash }, 'Response sent');
+    logger.info('Summary returned');
     return trimmed;
   } catch (error) {
-    logger.error({ err: error, hash }, 'Failed to generate Gemini commit summary');
-    if (error.message && error.message.includes('API_KEY')) {
-      logger.error({ hash }, 'Gemini error: invalid API key');
-    } else if (error.message && error.message.includes('quota')) {
-      logger.error({ hash }, 'Gemini error: quota exceeded');
-    } else if (error.message && error.message.includes('safety')) {
-      logger.error({ hash }, 'Gemini error: response blocked by safety filters');
-    } else if (error.message && error.message.includes('not found') || error.message && error.message.includes('404')) {
-      logger.error({ hash }, 'Gemini error: model not found or blocked');
-    } else if (error.message && error.message.includes('timeout')) {
-      logger.error({ hash }, 'Gemini error: request timed out');
-    } else if (error.response) {
-      logger.error({ hash, status: error.response?.status, statusText: error.response?.statusText }, 'Gemini HTTP error');
-    }
+    logger.error('---------------------------------');
+    logger.error('Gemini error');
+    logger.error('error.message: ' + error.message);
+    logger.error('error.status: ' + (error.status || error.statusText || 'N/A'));
+    logger.error('error.stack: ' + error.stack);
+    logger.error('error.response: ' + JSON.stringify(error.response || {}));
+    logger.error('error.details: ' + JSON.stringify(error.details || error.cause || {}));
+    logger.error('---------------------------------');
     return fallbackCommitSummary(commit);
   }
 }
@@ -70,44 +74,45 @@ async function generateRepoSummary(repoInfo, readmeText = '', chronologicalCommi
     throw new Error('GEMINI_API_KEY is not configured on server');
   }
 
-  const model = ai.getGenerativeModel({ model: MODEL_NAME });
   const prompt = buildRepoSummaryPrompt(repoInfo, readmeText, chronologicalCommits);
 
-  logger.info({ repoId, promptLength: prompt.length, model: MODEL_NAME }, 'Calling Gemini for repo summary');
+  logger.info('---------------------------------');
+  logger.info('[Gemini]');
+  logger.info('Repository: ' + repoId);
+  logger.info('Model: ' + MODEL_NAME);
+  logger.info('Prompt length: ' + prompt.length);
+  logger.info('Prompt text (truncated): ' + prompt.substring(0, 3000));
+  logger.info('Calling Gemini...');
+  logger.info('---------------------------------');
 
   try {
+    const model = ai.getGenerativeModel({ model: MODEL_NAME });
     const result = await model.generateContent(prompt);
-    logger.info({ repoId }, 'Gemini response received');
-
     const text = result.response ? result.response.text() : '';
     const trimmed = text ? text.trim() : '';
 
-    logger.info({ repoId, responseLength: trimmed.length }, 'Gemini response length');
-    if (trimmed.length > 0) {
-      logger.debug({ repoId, rawResponse: trimmed.substring(0, 500) }, 'Gemini raw response (truncated)');
-    }
+    logger.info('---------------------------------');
+    logger.info('Response received');
+    logger.info('Token usage: ' + JSON.stringify(result.response.usageMetadata || 'not available'));
+    logger.info('Finish reason: ' + JSON.stringify(result.response.candidates?.[0]?.finishReason || 'not available'));
+    logger.info('Response text: ' + (trimmed ? trimmed.substring(0, 500) : '(empty)'));
+    logger.info('---------------------------------');
 
     if (!trimmed || trimmed.length === 0) {
       throw new Error('Gemini returned empty or whitespace story');
     }
 
-    logger.info({ repoId }, 'Response sent');
+    logger.info('Summary returned');
     return trimmed;
   } catch (error) {
-    logger.error({ err: error, repoId }, 'Failed to generate Gemini repo summary');
-    if (error.message && error.message.includes('API_KEY')) {
-      logger.error({ repoId }, 'Gemini error: invalid API key');
-    } else if (error.message && error.message.includes('quota')) {
-      logger.error({ repoId }, 'Gemini error: quota exceeded');
-    } else if (error.message && error.message.includes('safety')) {
-      logger.error({ repoId }, 'Gemini error: response blocked by safety filters');
-    } else if (error.message && error.message.includes('not found') || error.message && error.message.includes('404')) {
-      logger.error({ repoId }, 'Gemini error: model not found or blocked');
-    } else if (error.message && error.message.includes('timeout')) {
-      logger.error({ repoId }, 'Gemini error: request timed out');
-    } else if (error.response) {
-      logger.error({ repoId, status: error.response?.status, statusText: error.response?.statusText }, 'Gemini HTTP error');
-    }
+    logger.error('---------------------------------');
+    logger.error('Gemini error');
+    logger.error('error.message: ' + error.message);
+    logger.error('error.status: ' + (error.status || error.statusText || 'N/A'));
+    logger.error('error.stack: ' + error.stack);
+    logger.error('error.response: ' + JSON.stringify(error.response || {}));
+    logger.error('error.details: ' + JSON.stringify(error.details || error.cause || {}));
+    logger.error('---------------------------------');
     throw error;
   }
 }

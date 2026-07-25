@@ -17,12 +17,21 @@ async function getCommitDetail(req, res, next) {
     const { repoId, hash } = req.params;
     logger.info({ repoId, hash }, 'Received narration request');
 
-    const dirEntry = getDirByRepoId(repoId);
+    let dirEntry = getDirByRepoId(repoId);
+    let repoPath = dirEntry ? dirEntry.path : null;
+    const dbRepo = getRepoById(repoId);
+
+    // Fall back to database if not in memory map (server restart)
+    if (!repoPath && dbRepo && dbRepo.temp_path && fs.existsSync(dbRepo.temp_path)) {
+      repoPath = dbRepo.temp_path;
+      logger.info({ repoId, repoPath }, 'Found repo path from DB fallback');
+    }
+
     let commitData = null;
     let diffText = '';
 
-    if (dirEntry && dirEntry.path) {
-      const git = simpleGit(dirEntry.path);
+    if (repoPath) {
+      const git = simpleGit(repoPath);
       try {
         const log = await git.log(['-n', '1', hash, '--stat']);
         if (log.latest) {
@@ -32,9 +41,9 @@ async function getCommitDetail(req, res, next) {
             message: log.latest.message,
             author: { name: log.latest.author_name, email: log.latest.author_email },
             files: log.latest.diff ? log.latest.diff.files.map(f => f.file) : [],
+            repoName: dbRepo ? (dbRepo.full_name || dbRepo.name) : repoId,
           };
         }
-        // Fetch patch/diff for richer summary
         try {
           const diffResult = await git.raw(['diff', `${hash}^..${hash}`, '--', '-M']);
           if (diffResult && diffResult.length < 5000) {
@@ -51,7 +60,7 @@ async function getCommitDetail(req, res, next) {
     }
 
     if (!commitData) {
-      const err = new Error(`Commit ${hash} not found`);
+      const err = new Error(`Commit ${hash} not found in repo ${repoId}`);
       err.statusCode = 404;
       err.code = 'COMMIT_NOT_FOUND';
       throw err;
@@ -62,8 +71,11 @@ async function getCommitDetail(req, res, next) {
     const refresh = req.query.refresh === 'true' || req.body?.refresh === true;
     let summary = !refresh ? getCachedSummary(repoId, hash) : null;
     if (!summary) {
+      logger.info({ repoId, hash }, 'No cached summary, calling Gemini');
       summary = await generateCommitSummary(commitData, diffText);
       saveSummary(repoId, hash, summary);
+    } else {
+      logger.info({ repoId, hash, summaryLength: summary.length }, 'Using cached summary');
     }
 
     logger.info({ repoId, hash, summaryLength: summary.length }, 'Response sent');
@@ -78,6 +90,12 @@ async function getCommitDetail(req, res, next) {
       },
     });
   } catch (error) {
+    logger.error('---------------------------------');
+    logger.error('Controller error');
+    logger.error('error.message: ' + error.message);
+    logger.error('error.status: ' + (error.statusCode || error.status || 500));
+    logger.error('error.stack: ' + error.stack);
+    logger.error('---------------------------------');
     next(error);
   }
 }
@@ -92,14 +110,20 @@ async function getRepoSummary(req, res, next) {
     let summary = !refresh ? getCachedSummary(repoId, 'OVERALL') : null;
 
     if (!summary) {
-      const dirEntry = getDirByRepoId(repoId);
-      const repoInfo = getRepoById(repoId) || { id: repoId, name: repoId, fullName: repoId };
+      let dirEntry = getDirByRepoId(repoId);
+      const dbRepo = getRepoById(repoId);
+      const repoInfo = dbRepo || { id: repoId, name: repoId, fullName: repoId };
+      let repoPath = dirEntry ? dirEntry.path : null;
+
+      if (!repoPath && dbRepo && dbRepo.temp_path && fs.existsSync(dbRepo.temp_path)) {
+        repoPath = dbRepo.temp_path;
+        logger.info({ repoId, repoPath }, 'Found repo path from DB fallback');
+      }
+
       let chronologicalCommits = [];
       let readmeText = '';
 
-      if (dirEntry && dirEntry.path) {
-        const repoPath = dirEntry.path;
-
+      if (repoPath) {
         // Read README content if available
         const readmeFiles = ['README.md', 'README', 'readme.md', 'README.txt', 'README.rst'];
         for (const fname of readmeFiles) {
@@ -169,7 +193,12 @@ async function getRepoSummary(req, res, next) {
       },
     });
   } catch (error) {
-    logger.error({ err: error.message, repoId: req.params.repoId }, 'Failed to get repository summary');
+    logger.error('---------------------------------');
+    logger.error('Controller error (repo summary)');
+    logger.error('error.message: ' + error.message);
+    logger.error('error.status: ' + (error.statusCode || error.status || 500));
+    logger.error('error.stack: ' + error.stack);
+    logger.error('---------------------------------');
     next(error);
   }
 }

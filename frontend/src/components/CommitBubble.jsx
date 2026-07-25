@@ -46,6 +46,7 @@ export default function CommitBubble({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [localSummary, setLocalSummary] = useState(null);
 
   const sha = commit.fullHash || commit.hash;
@@ -58,11 +59,13 @@ export default function CommitBubble({
     if (loading) return;
     setLoading(true);
     setError(false);
+    setErrorMessage('');
 
     try {
       let resultSummary = null;
 
       if (currentRepoId && sha) {
+        console.log(`[CommitBubble] Sending commit narration request for ${sha}`);
         const url = `/api/repos/${currentRepoId}/commits/${sha}/summary`;
         const res = await fetch(url, {
           method: 'POST',
@@ -74,7 +77,14 @@ export default function CommitBubble({
           const json = await res.json();
           if (json.data?.summary) {
             resultSummary = json.data.summary;
+          } else {
+            console.error('[CommitBubble] Response missing summary:', json);
           }
+        } else {
+          const errJson = await res.json().catch(() => ({}));
+          const errMsg = errJson.error?.message || `HTTP ${res.status}`;
+          console.error('[CommitBubble] Backend error:', errMsg);
+          setErrorMessage(errMsg);
         }
       }
 
@@ -90,7 +100,8 @@ export default function CommitBubble({
       }
       setLoading(false);
     } catch (err) {
-      console.error('Failed to generate commit summary:', err);
+      console.error('[CommitBubble] Failed to generate commit summary:', err);
+      setErrorMessage(err.message || 'Network error');
       setError(true);
       setLoading(false);
     }
@@ -238,6 +249,11 @@ export default function CommitBubble({
                 <div className="capsule-ai-box ai-box-error">
                   <div className="ai-error-content">
                     <span>⚠️ Couldn't retrieve memory story.</span>
+                    {errorMessage && (
+                      <p style={{ fontSize: '0.75rem', color: '#ff8a8a', marginTop: '0.25rem', wordBreak: 'break-word' }}>
+                        {errorMessage}
+                      </p>
+                    )}
                     <button
                       type="button"
                       className="ai-retry-btn"
