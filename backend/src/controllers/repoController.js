@@ -81,4 +81,22 @@ async function cloneRepo(req, res, next) {
   }
 }
 
-module.exports = { validateRepo, cloneRepo };
+const { getCommits } = require('../services/gitParserService');
+
+async function getRepoCommits(req, res, next) {
+  try {
+    const { repoId } = req.params;
+    const { page, limit, perPage } = req.query;
+
+    const result = await getCommits(repoId, { page, limit, perPage });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = { validateRepo, cloneRepo, getRepoCommits };

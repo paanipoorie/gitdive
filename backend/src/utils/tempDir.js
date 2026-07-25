@@ -44,6 +44,15 @@ function getDirInfo(dirPath) {
   return activeDirs.get(dirPath);
 }
 
+function getDirByRepoId(repoId) {
+  for (const entry of activeDirs.values()) {
+    if (entry.repoId === repoId) {
+      return entry;
+    }
+  }
+  return null;
+}
+
 function cleanupDir(dirPath) {
   const entry = activeDirs.get(dirPath);
   if (!entry) return false;
@@ -73,12 +82,14 @@ function getTempBase() {
   return TEMP_BASE;
 }
 
-setInterval(cleanupExpired, 60 * 60 * 1000);
+const timer = setInterval(cleanupExpired, 60 * 60 * 1000);
+if (timer.unref) timer.unref();
 
 module.exports = {
   createTempDir,
   trackDir,
   getDirInfo,
+  getDirByRepoId,
   cleanupDir,
   cleanupExpired,
   getTempBase,
