@@ -57,6 +57,7 @@ docker-compose up
 - `POST /api/repos/clone` - Shallow clone repository into temp dir
 - `GET /api/repos/:repoId/commits` - Paginated commit history with diff stats
 - `GET /api/repos/:repoId/timeline` - Minimal commit timeline payload for dive line bubble rendering (`hash`, `shortHash`, `order`, `author`, `branch`)
+- `GET /api/repos/:repoId/stats` - Aggregate repository statistics (authors, top files, activity, additions/deletions)
 
 ## Documentation
 
