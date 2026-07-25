@@ -139,7 +139,7 @@ const MOCK_COMMITS = [
 // Sea creature glyphs used to mark each commit bubble.
 const ANIMAL_MARKS = ['🐠', '🐡', '🦑', '🐙', '🦀', '🐟', '🐢', '🦐', '🐬', '🪼', 'SHARK', '🐳'];
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = '/api';
 
 // =============================================================
 // State & DOM helpers
