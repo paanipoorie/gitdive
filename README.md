@@ -51,11 +51,19 @@ npm run dev
 docker-compose up
 ```
 
+## API Endpoints Overview
+
+- `POST /api/repos/validate` - Validate GitHub URL
+- `POST /api/repos/clone` - Shallow clone repository into temp dir
+- `GET /api/repos/:repoId/commits` - Paginated commit history with diff stats
+- `GET /api/repos/:repoId/timeline` - Minimal commit timeline payload for dive line bubble rendering (`hash`, `shortHash`, `order`, `author`, `branch`)
+
 ## Documentation
 
 - [Architecture](docs/architecture.md)
 - [API Reference](docs/api.md)
 - [Roadmap](docs/roadmap.md)
+- [Phases](docs/PHASES.md)
 
 ## License
 
