@@ -1155,194 +1155,227 @@ footer a {
   }
 }
 
-/* Minimal animal commit bubbles */
-/* Bubble circle showing the commit title */
-.commit-bubble.minimal-bubble {
-  width: 380px;
-  min-height: 330px;
-  align-items: center;
-  position: relative
-}
-
-.title-circle {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
+/* ===== Framer Motion Underwater Memory Capsule Commit Bubbles ===== */
+.framer-commit-bubble {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  text-align: center;
-  background: radial-gradient(circle at 32% 22%, rgba(214, 255, 252, .15), transparent 12%), rgba(10, 71, 110, .45);
-  border: 2px solid rgba(112, 235, 228, .6);
-  box-shadow: inset 0 0 25px rgba(81, 218, 217, .15), 0 0 15px rgba(49, 198, 204, .12);
-  transition: .3s
+  margin-bottom: 120px;
+  outline: none;
+  box-sizing: border-box;
 }
 
-.title-circle h3 {
+.bubble-left {
+  margin-left: 8vw;
+}
+
+.bubble-right {
+  margin-left: auto;
+  margin-right: 8vw;
+}
+
+/* Collapsed state inner circle content */
+.collapsed-bubble-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  width: 100%;
+  height: 100%;
+}
+
+.bubble-animal-icon {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.collapsed-title {
   margin: 0;
   color: #d9ffff;
-  font: 7px/1.6 "Press Start 2P";
-  letter-spacing: .5px;
-  text-shadow: 1px 1px #02122e
+  font: 7px/1.5 "Press Start 2P";
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px #02122e;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.minimal-bubble:hover .title-circle,
-.minimal-bubble:focus .title-circle,
-.minimal-bubble.active .title-circle {
-  border-color: #7fffff;
-  box-shadow: inset 0 0 30px rgba(78, 226, 219, .25), 0 0 20px rgba(88, 231, 224, .25);
-  transform: scale(1.08)
-}
-
-/* Detail card revealed on hover/focus/active */
-.commit-hover-detail {
-  position: absolute;
-  z-index: 12;
-  left: 200px;
-  top: 50%;
-  transform: translateY(-50%) translateX(-12px);
-  width: 320px;
-  padding: 24px;
-  background: rgba(2, 15, 36, .98);
-  border: 2px solid var(--aqua);
-  box-shadow: 10px 10px 0 rgba(0, 4, 17, .6);
-  opacity: 0;
-  visibility: hidden;
-  transition: .2s ease;
-  pointer-events: none;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start
-}
-
-.bubble-right .commit-hover-detail {
-  left: auto;
-  right: 200px;
-  transform: translateY(-50%) translateX(12px)
-}
-
-.minimal-bubble:hover .commit-hover-detail,
-.minimal-bubble:focus .commit-hover-detail,
-.minimal-bubble.active .commit-hover-detail {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(-50%) translateX(0)
-}
-
-.animal-display {
-  font-size: 48px;
-  line-height: 1;
-  flex-shrink: 0;
-  filter: drop-shadow(3px 3px 0 rgba(0, 10, 30, .4));
-  animation: float-animal 2s ease-in-out infinite
-}
-
-.detail-content {
-  flex: 1
-}
-
-.commit-meta {
+.collapsed-hash {
   display: block;
+  margin-top: 6px;
   color: var(--sand);
   font: 6px "Press Start 2P";
-  margin-bottom: 8px;
-  letter-spacing: .5px
+  opacity: 0.85;
 }
 
-.commit-hover-detail time {
+/* Expanded state capsule content */
+.expanded-capsule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 24px 28px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.capsule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid rgba(88, 231, 224, 0.2);
+  padding-bottom: 10px;
+}
+
+.capsule-meta-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.type-badge {
+  background: #073356;
+  color: var(--aqua);
+  border: 1px solid rgba(88, 231, 224, 0.4);
+  font-size: 6px;
+  font-family: "Press Start 2P";
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.hash-tag {
+  font-family: "Press Start 2P";
+  font-size: 8px;
+  color: var(--sand);
+}
+
+.capsule-date {
+  font-size: 8px;
+  color: #85b9bc;
+}
+
+.capsule-title {
+  font-family: "Press Start 2P";
+  font-size: 11px;
+  line-height: 1.6;
+  color: #ffffff;
+  margin: 4px 0 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.capsule-description {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #b6dcdd;
+  margin: 4px 0 0;
+}
+
+.capsule-files-section {
+  margin-top: 4px;
+}
+
+.files-header {
   display: block;
-  color: #72a7aa;
-  font-size: 7px;
-  margin-bottom: 10px
-}
-
-.commit-summary {
-  margin: 10px 0;
-  color: #b1d0d0;
-  font-size: 9px;
-  line-height: 1.55
-}
-
-.files-label {
-  display: block;
-  color: #629398;
-  font: 5px "Press Start 2P";
-  margin-top: 10px;
+  font-family: "Press Start 2P";
+  font-size: 6px;
+  color: #6ba0a5;
+  letter-spacing: 0.5px;
   margin-bottom: 6px;
-  letter-spacing: .5px
 }
 
-.files-list {
-  margin: 0;
-  color: #86b4b6;
+.files-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.file-chip {
+  background: rgba(4, 30, 60, 0.75);
+  border: 1px solid rgba(88, 231, 224, 0.3);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 8px;
+  color: #a4e4e2;
+}
+
+.more-chip {
+  background: rgba(14, 45, 80, 0.6);
+  color: var(--sand);
+  border-color: rgba(255, 211, 123, 0.3);
+}
+
+/* AI Summary memory box inside the expanded bubble */
+.capsule-ai-box {
+  margin-top: 8px;
+  background: radial-gradient(circle at top left, rgba(120, 90, 220, 0.25), rgba(6, 26, 60, 0.95));
+  border: 1px solid rgba(138, 110, 235, 0.6);
+  box-shadow: inset 0 0 15px rgba(138, 110, 235, 0.18);
+  border-radius: 16px;
+  padding: 14px 18px;
+}
+
+.ai-box-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Press Start 2P";
   font-size: 7px;
-  line-height: 1.5
+  color: #c6b5ff;
 }
 
-.minimal-bubble .tiny-bubbles {
-  top: 15px;
-  right: auto;
-  left: 125px
+.ai-star-sparkle {
+  color: #ccaaff;
+  font-size: 14px;
 }
 
-.bubble-right.minimal-bubble .tiny-bubbles {
-  left: auto;
-  right: 125px
+.ai-summary-body {
+  margin: 8px 0 0;
+  font-size: 10px;
+  line-height: 1.75;
+  color: #dbe8ff;
 }
 
-/* ===== Responsive: commit bubble detail cards ===== */
-@media(max-width:800px) {
-  .commit-bubble.minimal-bubble {
-    width: 260px;
-    min-height: 315px
-  }
+.ai-loading-pulse {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  color: #b8abff;
+  margin-top: 8px;
+}
 
-  .title-circle {
-    width: 130px;
-    height: 130px;
-    padding: 16px
-  }
+.pulse-dots {
+  display: flex;
+  gap: 5px;
+}
 
-  .title-circle h3 {
-    font-size: 6px
-  }
+.pulse-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b8abff;
+  box-shadow: 0 0 8px #b8abff;
+}
 
-  .commit-hover-detail,
-  .bubble-right .commit-hover-detail {
-    position: fixed;
-    z-index: 30;
-    left: 12px;
-    right: 12px;
-    top: auto;
-    bottom: 14px;
-    width: auto;
-    transform: translateY(10px);
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 12px
-  }
+.inspecting-indicator {
+  color: var(--sand);
+  font-size: 5px;
+  margin-left: 4px;
+}
 
-  .animal-display {
-    font-size: 42px
-  }
-
-  .minimal-bubble:hover .commit-hover-detail,
-  .minimal-bubble:focus .commit-hover-detail,
-  .minimal-bubble.active .commit-hover-detail {
-    transform: translateY(0)
-  }
-
-  .detail-content {
-    flex: 1
-  }
-
-  .minimal-bubble .tiny-bubbles {
-    left: 105px
-  }
-
-  .bubble-right.minimal-bubble .tiny-bubbles {
-    right: 105px
+@media(max-width: 800px) {
+  .bubble-left,
+  .bubble-right {
+    margin-left: 3vw;
+    margin-right: 3vw;
   }
 }
