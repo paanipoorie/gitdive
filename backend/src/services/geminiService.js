@@ -38,7 +38,7 @@ async function generateCommitSummary(commit, diffText = '') {
   try {
     const ai = getAiClient();
     if (!ai) {
-      logger.warn({ hash }, 'GEMINI_API_KEY missing, using fallback commit summary');
+      logger.warn({ hash }, 'GEMINI_API_KEY missing, using ocean fallback commit summary');
       return fallbackCommitSummary(commit);
     }
 
@@ -81,7 +81,7 @@ async function generateRepoSummary(repoInfo, readmeText = '', chronologicalCommi
   const prompt = buildRepoSummaryPrompt(repoInfo, readmeText, chronologicalCommits);
 
   logger.info('---------------------------------');
-  logger.info('[Gemini] Generating Repo Summary');
+  logger.info('[Gemini] Generating Repo Summary Story');
   logger.info('Repository: ' + repoId);
   logger.info('Prompt length: ' + prompt.length);
   logger.info('Calling Gemini...');
@@ -107,9 +107,23 @@ async function generateRepoSummary(repoInfo, readmeText = '', chronologicalCommi
 }
 
 function fallbackCommitSummary(commit) {
-  return `Commit summary for ${commit.title}: Modified ${
-    commit.files ? commit.files.length : 1
-  } file(s) (+${commit.added || 12} / -${commit.removed || 4} lines).`;
+  const msg = (commit.message || commit.title || '').toLowerCase();
+  if (msg.includes('init') || msg.includes('foundation') || msg.includes('setup') || msg.includes('create')) {
+    return `The expedition dropped its initial anchor into the deep seabed. Structural foundations were laid down like heavy coral blocks, securing a solid underwater harbor for all future modules to build upon.`;
+  }
+  if (msg.includes('auth') || msg.includes('user') || msg.includes('login') || msg.includes('gate')) {
+    return `A protective tide gate was constructed across the current. Access currents settled, ensuring only authenticated vessels can dive into the deeper waters downstream.`;
+  }
+  if (msg.includes('route') || msg.includes('nav') || msg.includes('flow')) {
+    return `New sub-aquatic channels were charted through the reefs. Explorers can now swim effortlessly between different coordinates across the deep sea.`;
+  }
+  if (msg.includes('style') || msg.includes('design') || msg.includes('ocean') || msg.includes('pixel') || msg.includes('ui')) {
+    return `Bioluminescent corals bloomed across the sea floor. Vibrant cyan glow and pixel light rays illuminated the dark waters, turning the interface into a living underwater reef.`;
+  }
+  if (msg.includes('fix') || msg.includes('repair') || msg.includes('bug')) {
+    return `A turbulent whirlpool near the rocky trench was smoothed out. Pressure valves were tightened, allowing sea creatures to drift without friction across the current.`;
+  }
+  return `A gentle wave rippled through the underwater ecosystem. This change strengthened the surrounding coral structure, allowing the codebase to breathe freely in the deep sea.`;
 }
 
 module.exports = {

@@ -1,18 +1,19 @@
 function buildCommitSummaryPrompt(commit, diffText = '') {
-  return `You are a friendly underwater narrator exploring a repository's memory reef, like Jacques Cousteau explaining software to a curious deep-sea diver.
+  return `You are an expert deep-sea expedition narrator exploring a codebase's memory reef.
 
-Your job is to summarize the "story" of this commit in a playful, imaginative, ocean-themed way (2-3 short sentences).
+Your task is to explain the exact technical changes made in this commit using vivid, imaginative ocean and marine imagery (currents, deep-sea anchors, bioluminescent corals, pressure valves, underwater navigation channels, seabed trenches).
 
-CRITICAL RULES:
-1. Do NOT repeat details already visible on the commit card: DO NOT list or quote raw file names, commit hashes, dates, or exact raw commit messages.
-2. Translate technical software changes into evocative underwater/marine metaphors (currents, reefs, tides, creatures, deep-sea channels, glowing algae, diving paths).
-3. Keep it short (2-3 sentences max), warm, and understandable even for non-developers. No dry technical jargon.
+MANDATORY RULES:
+1. Deeply weave ocean and marine metaphors into every single sentence. Connect technical actions directly to ocean elements (e.g. if files were created, say a new seabed anchor was dropped; if bugs were fixed, say turbulent currents were calmed; if UI was built, say bioluminescent coral reefs bloomed; if auth/routing was added, say new navigation channels were charted through the waves).
+2. Do NOT write dry, generic, or vague summaries. Make it evocative and distinct.
+3. Do NOT repeat raw commit hashes, dates, or list raw file paths.
+4. Keep the length strictly to 2 to 3 vivid, engaging sentences.
 
 Commit Message Context: ${commit.message}
 Files Changed: ${JSON.stringify(commit.files || [])}
 ${diffText ? `Diff snippet:\n${diffText.substring(0, 1500)}` : ''}
 
-Output ONLY the 2-3 sentence ocean narrative summary.`;
+Output ONLY the 2-3 sentence ocean-themed commit summary.`;
 }
 
 function buildRepoSummaryPrompt(repoInfo, readmeOrCommits = '', chronologicalCommits = []) {
@@ -58,7 +59,7 @@ function buildRepoSummaryPrompt(repoInfo, readmeOrCommits = '', chronologicalCom
     ? `\nREPOSITORY README:\n${readmeText.substring(0, 2000)}\n`
     : '';
 
-  return `You are an AI expedition narrator analyzing a repository's full life story.
+  return `You are an ancient chronicler of the abyssal sea, telling the grand oceanic origin story of how this repository emerged.
 
 REPOSITORY METADATA:
 - Name: ${repoName}
@@ -69,14 +70,16 @@ CHRONOLOGICAL COMMIT HISTORY (Oldest to Newest):
 ${commitHistoryText.substring(0, 8000)}
 
 NARRATIVE SPECIFICATIONS:
-1. Explain how the repository evolved over time, starting from its beginning, progressing through major additions/turning points, and reaching its current final state.
-2. Focus on engineering progress and what the project gained as it developed.
-3. Write in simple, clear English (60–120 words).
-4. Do NOT simply list filenames, commit messages, or stats like "Across 20 commits...".
-5. Do NOT invent features that are not described in the commits or README.
-6. End with exactly ONE subtle ocean metaphor near the end.
+1. Tell a captivating, chronological oceanic story of how this project emerged and grew over time, driven by its actual commits and README.
+2. Structure the story as a 3-part deep-sea odyssey:
+   - Act I: The Surface Drop & First Anchor (how the project originated from its initial commit, setting up the core foundation on the seabed).
+   - Act II: Navigating Current Shifts & Coral Reef Expansion (how features, bug fixes, refactors, and new routes expanded the underwater ecosystem).
+   - Act III: The Abyssal Citadel (how the project matured into a resilient deep-sea structure resting peacefully at the ocean floor).
+3. Every paragraph MUST be rich in ocean and marine metaphors (pressure, bioluminescence, ocean currents, abyssal trenches, tides, coral formations, anchors).
+4. Reflect the true functional purpose of the codebase while maintaining an immersive, poetic marine tone.
+5. Length: 3 short paragraphs (approx 120–180 words total). Do NOT output raw hashes or bullet points.
 
-Output ONLY the complete, cohesive repository story narrative.`;
+Output ONLY the complete, captivating ocean story chronicle.`;
 }
 
 module.exports = {

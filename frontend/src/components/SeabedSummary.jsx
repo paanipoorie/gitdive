@@ -4,7 +4,7 @@ import TypewriterText from './TypewriterText';
 
 /**
  * SeabedSummary Component
- * Minimal functional repository summary component using Google Gemini
+ * Repository chronicle summary component powered by Google Gemini
  */
 export default function SeabedSummary({ commits = [], currentRepoId }) {
   const [summaryText, setSummaryText] = useState('');
@@ -37,16 +37,19 @@ export default function SeabedSummary({ commits = [], currentRepoId }) {
         }
       }
 
-      // High-quality fallback summary for demo / mock mode
+      // High-quality 3-act ocean story chronicle fallback for demo / mock mode
       await new Promise((resolve) => setTimeout(resolve, 800));
       setSummaryText(
-        `Repository Overview:\n\n` +
-          `This repository contains ${commits.length || 12} total commits covering initial architecture setup, feature implementations, UI refinements, and documentation updates.\n\n` +
-          `Key changes include setting up core components, integrating API workflows, refining commit visualization, and polishing user interactions.`
+        `Act I — The First Surface Drop:\n` +
+        `This codebase began as a single anchor dropped into the unknown waters, establishing its initial foundations on the ocean floor across its early commits.\n\n` +
+        `Act II — Coral Reef Expansion & Current Navigation:\n` +
+        `As exploration deepened across ${commits.length || 12} commits, new feature channels were carved out, bioluminescent UI reefs bloomed, and turbulent bug currents were calmed into smooth waters.\n\n` +
+        `Act III — The Abyssal Citadel:\n` +
+        `Today, the repository rests as a resilient deep-sea structure at the bottom of the ocean, fully equipped to withstand any shifting tides.`
       );
     } catch (err) {
       console.error('[SeabedSummary] Error fetching summary:', err.message);
-      setErrorMsg('Unable to generate repository summary at this time.');
+      setErrorMsg('Unable to generate repository summary story at this time.');
     } finally {
       setLoading(false);
     }
@@ -76,11 +79,11 @@ export default function SeabedSummary({ commits = [], currentRepoId }) {
 
       <p className="eyebrow">TOTAL COMMITS · <span id="finalDepth">{commits.length || 12}</span></p>
 
-      <h2 className="seabed-title">REPOSITORY SUMMARY</h2>
+      <h2 className="seabed-title">REPOSITORY CHRONICLE</h2>
 
       {!summaryText && !errorMsg && (
         <p className="summary-intro">
-          You've reached the end of the commit timeline. Generate an overall repository summary using Google Gemini.
+          You've reached the end of the commit timeline. Uncover the story of how this repository emerged through the deep sea with Google Gemini.
         </p>
       )}
 
@@ -94,7 +97,7 @@ export default function SeabedSummary({ commits = [], currentRepoId }) {
         >
           {loading ? (
             <span className="btn-loading-state">
-              <span className="spinner">✦</span> GENERATING SUMMARY…
+              <span className="spinner">✦</span> GENERATING OCEAN STORY…
             </span>
           ) : (
             <>
@@ -113,13 +116,13 @@ export default function SeabedSummary({ commits = [], currentRepoId }) {
             onClick={() => fetchStory(true)}
             disabled={loading}
           >
-            {loading ? '✦ RETRYING…' : '✦ RETRY SUMMARY'}
+            {loading ? '✦ RETRYING…' : '✦ RETRY CHRONICLE'}
           </button>
         </div>
       )}
 
       <small className="seabed-footer-text">
-        POWERED BY GOOGLE GEMINI
+        POWERED BY GOOGLE GEMINI NARRATOR
       </small>
 
       <AnimatePresence>
@@ -132,7 +135,7 @@ export default function SeabedSummary({ commits = [], currentRepoId }) {
             transition={{ duration: 0.5, ease: 'easeOut' }}
           >
             <div className="summary-output-header">
-              <span className="summary-title">✦ REPOSITORY SUMMARY</span>
+              <span className="summary-title">✦ REPOSITORY CHRONICLE STORY</span>
             </div>
 
             <div className="story-content-body">
