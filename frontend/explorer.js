@@ -129,7 +129,7 @@ const MOCK_COMMITS = [
     hash: 'f41ea77',
     fullHash: 'f41ea77',
     date: 'Jul 25, 2026 · 08:55',
-    description: 'Final polish for the two-page Commit Diver frontend experience.',
+    description: 'Final polish for the two-page GitDive frontend experience.',
     added: 219,
     removed: 51,
     files: ['index.html', 'explorer.html', 'styles.css', 'explorer.js']

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import SubmarineNavbar from './components/SubmarineNavbar';
 import RepoGate from './components/RepoGate';
 import StickyDiver from './components/StickyDiver';
 import CommitBubble from './components/CommitBubble';
 import SeabedSummary from './components/SeabedSummary';
+import OceanFauna from './components/OceanFauna';
 
 const MOCK_COMMITS = [
   {
@@ -132,7 +134,7 @@ const MOCK_COMMITS = [
     hash: 'f41ea77',
     fullHash: 'f41ea77',
     date: 'Jul 25, 2026 · 08:55',
-    description: 'Final polish for the two-page Commit Diver frontend experience.',
+    description: 'Final polish for the two-page GitDive frontend experience.',
     added: 219,
     removed: 51,
     files: ['index.html', 'explorer.html', 'styles.css', 'explorer.js'],
@@ -239,7 +241,7 @@ export default function ExplorerApp() {
       }
 
       setIsLoading(true);
-      setErrorMsg('PREPARING YOUR DESCENT…');
+      setErrorMsg('LOADING REPOSITORY…');
 
       const fetchedCommits = await fetchRepositoryCommits(url);
       setCommits(fetchedCommits);
@@ -260,7 +262,14 @@ export default function ExplorerApp() {
     setErrorMsg('');
   };
 
-  // Diver proximity calculation & single bubble arrival/departure rhythm
+  const handleSelectBubble = (index) => {
+    const bubbleElements = document.querySelectorAll('.framer-commit-bubble');
+    if (bubbleElements[index]) {
+      bubbleElements[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  // Diver proximity calculation & single bubble arrival rhythm
   useEffect(() => {
     if (!isExpeditionActive || commits.length === 0) return;
 
@@ -268,7 +277,7 @@ export default function ExplorerApp() {
       const bubbleElements = document.querySelectorAll('.framer-commit-bubble');
       if (!bubbleElements || bubbleElements.length === 0) return;
 
-      const diverViewportY = window.innerHeight * 0.30 + 95; // Diver position centered at sticky 30vh
+      const diverViewportY = window.innerHeight * 0.3 + 95;
 
       let minDistance = Infinity;
       let closestIdx = 0;
@@ -286,17 +295,15 @@ export default function ExplorerApp() {
 
       setClosestCommitIndex((prevClosest) => {
         if (prevClosest !== closestIdx) {
-          // Collapse previous bubble immediately & interrupt ongoing animation
           setExpandedCommitIndex(null);
 
           if (pauseTimerRef.current) {
             clearTimeout(pauseTimerRef.current);
           }
 
-          // Arrival pause (~400ms) before expanding new bubble
           pauseTimerRef.current = setTimeout(() => {
             setExpandedCommitIndex(closestIdx);
-          }, 400);
+          }, 350);
 
           return closestIdx;
         }
@@ -304,14 +311,12 @@ export default function ExplorerApp() {
       });
     };
 
-    // Initial check
     calculateClosestCommit();
 
-    // Trigger initial expansion pause timer for the starting commit
     if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
     pauseTimerRef.current = setTimeout(() => {
       setExpandedCommitIndex(0);
-    }, 400);
+    }, 350);
 
     const handleScroll = () => {
       calculateClosestCommit();
@@ -329,11 +334,22 @@ export default function ExplorerApp() {
 
   const depthMeters = (closestCommitIndex + 1) * 50;
   const progressPercent = commits.length ? ((closestCommitIndex + 1) / commits.length) * 100 : 0;
-  // Calculate dynamic ocean height tightly matching commit bubbles + small gap to seabed summary
-  const oceanMinHeight = commits.length ? 340 + commits.length * 390 + 60 : 1800;
+  const depthProgressRatio = commits.length ? closestCommitIndex / (commits.length - 1) : 0;
+
+  const oceanMinHeight = commits.length ? 340 + commits.length * 390 + 380 : 1800;
+  const sunlightOpacity = Math.max(0, 0.85 - depthProgressRatio * 1.2);
+  const fogOpacity = Math.min(0.65, depthProgressRatio * 0.7);
 
   return (
     <>
+      <SubmarineNavbar
+        isExpeditionActive={isExpeditionActive}
+        repoName={repoName}
+        commitCount={commits.length}
+        isPrivate={false}
+        onChangeRepo={handleChangeRepo}
+      />
+
       {!isExpeditionActive ? (
         <RepoGate
           onStartDescent={handleStartDescent}
@@ -344,32 +360,47 @@ export default function ExplorerApp() {
         />
       ) : (
         <section className="vertical-expedition" id="expedition" ref={containerRef}>
-          <div className="dive-header">
-            <div>
-              <small>NOW EXPLORING</small>
-              <h2 id="repoName">{repoName}</h2>
-            </div>
-            <div>
-              <b id="commitTotal">{commits.length}</b>
-              <small>COMMITS FOUND</small>
-            </div>
-            <button id="changeRepo" onClick={handleChangeRepo}>
-              CHANGE REPO
-            </button>
-          </div>
+          <div
+            className="ocean-descent"
+            id="oceanDescent"
+            style={{
+              minHeight: `${oceanMinHeight}px`,
+              background: `linear-gradient(180deg, 
+                #083c73 0%, 
+                #062354 18%, 
+                #04173b 45%, 
+                #020c24 75%, 
+                #010613 100%)`,
+            }}
+          >
+            {/* Dynamic Surface Sunlight Rays (Fade out with depth) */}
+            <div
+              className="surface-glow"
+              style={{ opacity: sunlightOpacity }}
+              aria-hidden="true"
+            />
+            <div
+              className="water-light animated-rays"
+              style={{ opacity: sunlightOpacity * 0.75 }}
+              aria-hidden="true"
+            />
 
-          <div className="ocean-descent" id="oceanDescent" style={{ minHeight: `${oceanMinHeight}px` }}>
-            <div className="surface-glow" />
-            <div className="depth-rail">
+            {/* Depth Fog Overlay */}
+            <div
+              className="depth-fog-overlay"
+              style={{ opacity: fogOpacity }}
+              aria-hidden="true"
+            />
+
+            {/* Submarine Telemetry Timeline Rail */}
+            <div className="depth-rail" aria-hidden="true">
               <span id="depthProgress" style={{ height: `${progressPercent}%` }} />
             </div>
 
-            <div className="creature-layer" aria-hidden="true">
-              <img src="assets/creatures.png" className="creatures-one" alt="" />
-              <img src="assets/creatures.png" className="creatures-two" alt="" />
-              <img src="assets/creatures.png" className="creatures-three" alt="" />
-            </div>
+            {/* Ocean Fauna Ambient Backdrop */}
+            <OceanFauna depthProgress={depthProgressRatio} />
 
+            {/* Diver Tracking Sprite */}
             <StickyDiver
               diverSrc={diverSrc}
               depthMeters={depthMeters}
@@ -377,6 +408,15 @@ export default function ExplorerApp() {
               activeHash={commits[closestCommitIndex]?.hash}
             />
 
+            {/* Scroll Cue Banner */}
+            <div className="descent-start">
+              <span className="scroll-arrow" aria-hidden="true">
+                ↓
+              </span>
+              <p>SCROLL TO EXPLORE COMMITS</p>
+            </div>
+
+            {/* Holographic Terminal Commit Bubbles List */}
             <div className="commit-bubbles" id="commitBubbles">
               {commits.map((commit, idx) => {
                 const sha = commit.fullHash || commit.hash;
@@ -389,17 +429,14 @@ export default function ExplorerApp() {
                     currentRepoId={currentRepoId}
                     cachedSummary={summaryCache[sha]}
                     onSaveSummary={handleSaveSummary}
+                    onSelectBubble={handleSelectBubble}
                   />
                 );
               })}
             </div>
-
-            <div className="descent-start">
-              <span>↓</span>
-              <p>SCROLL TO DIVE THROUGH ANCIENT MEMORIES</p>
-            </div>
           </div>
 
+          {/* Deep Ocean Floor Emotional Climax */}
           <SeabedSummary commits={commits} currentRepoId={currentRepoId} />
         </section>
       )}
