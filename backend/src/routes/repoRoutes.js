@@ -3,6 +3,7 @@ const { validateRepoUrl } = require('../utils/validators');
 const { validateRepo, cloneRepo, getRepoCommits } = require('../controllers/repoController');
 const { getRepoTimeline } = require('../controllers/timelineController');
 const { getRepoStats } = require('../controllers/statsController');
+const { getCommitDetail, getRepoSummary } = require('../controllers/aiController');
 
 const router = express.Router();
 
@@ -11,5 +12,8 @@ router.post('/clone', validateRepoUrl, cloneRepo);
 router.get('/:repoId/commits', getRepoCommits);
 router.get('/:repoId/timeline', getRepoTimeline);
 router.get('/:repoId/stats', getRepoStats);
+router.get('/:repoId/commits/:hash/detail', getCommitDetail);
+router.get('/:repoId/summary', getRepoSummary);
+router.post('/:repoId/summary', getRepoSummary);
 
 module.exports = router;

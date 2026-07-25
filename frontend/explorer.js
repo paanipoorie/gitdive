@@ -1,14 +1,12 @@
 // =============================================================
-// Mock data
-// FRONTEND INTEGRATION POINT: replace this mock with your
-// backend's GitHub endpoint. Expected response: an array
-// matching the commit shape below.
+// Mock data fallback
 // =============================================================
 const MOCK_COMMITS = [
   {
     type: 'INIT',
     title: 'Create project foundation',
     hash: '8a2c1d4',
+    fullHash: '8a2c1d4',
     date: 'Jul 18, 2026 · 09:42',
     description: 'Set up the initial application structure, design tokens, and project documentation.',
     added: 684,
@@ -19,6 +17,7 @@ const MOCK_COMMITS = [
     type: 'FEATURE',
     title: 'Add GitHub connection flow',
     hash: '91be2a0',
+    fullHash: '91be2a0',
     date: 'Jul 18, 2026 · 14:06',
     description: 'Created the repository input experience and validation states for GitHub URLs.',
     added: 241,
@@ -29,6 +28,7 @@ const MOCK_COMMITS = [
     type: 'STYLE',
     title: 'Build pixel ocean environment',
     hash: 'c72fd81',
+    fullHash: 'c72fd81',
     date: 'Jul 19, 2026 · 11:28',
     description: 'Added the deep-sea palette, surface light rays, bubbles, coral, and pixel styling.',
     added: 509,
@@ -39,6 +39,7 @@ const MOCK_COMMITS = [
     type: 'FEATURE',
     title: 'Add diver selection',
     hash: '0f4ca92',
+    fullHash: '0f4ca92',
     date: 'Jul 19, 2026 · 16:51',
     description: 'Users can now choose a female, male, or unspecified diver before starting.',
     added: 187,
@@ -49,6 +50,7 @@ const MOCK_COMMITS = [
     type: 'FEATURE',
     title: 'Render repository commit list',
     hash: 'fd201b6',
+    fullHash: 'fd201b6',
     date: 'Jul 20, 2026 · 10:15',
     description: 'Created a full scrollable history with commit metadata and changed files.',
     added: 356,
@@ -59,6 +61,7 @@ const MOCK_COMMITS = [
     type: 'FEATURE',
     title: 'Create swim navigation system',
     hash: '5e98cb3',
+    fullHash: '5e98cb3',
     date: 'Jul 21, 2026 · 13:08',
     description: 'Connected the diver position to the selected commit with keyboard navigation.',
     added: 298,
@@ -69,6 +72,7 @@ const MOCK_COMMITS = [
     type: 'FIX',
     title: 'Repair mobile ocean controls',
     hash: '2db51aa',
+    fullHash: '2db51aa',
     date: 'Jul 22, 2026 · 18:13',
     description: 'Improved touch targets, responsive layout, and the small-screen timeline.',
     added: 94,
@@ -79,6 +83,7 @@ const MOCK_COMMITS = [
     type: 'ACCESS',
     title: 'Add keyboard and focus states',
     hash: '73ac114',
+    fullHash: '73ac114',
     date: 'Jul 23, 2026 · 09:27',
     description: 'Added keyboard swimming, visible focus treatment, and semantic labels.',
     added: 126,
@@ -89,6 +94,7 @@ const MOCK_COMMITS = [
     type: 'AI',
     title: 'Prepare Gemini summary handoff',
     hash: 'bd92e63',
+    fullHash: 'bd92e63',
     date: 'Jul 24, 2026 · 10:37',
     description: 'Added the frontend summary action and the response display container.',
     added: 173,
@@ -99,6 +105,7 @@ const MOCK_COMMITS = [
     type: 'DOCS',
     title: 'Document backend integration',
     hash: 'e037b2f',
+    fullHash: 'e037b2f',
     date: 'Jul 24, 2026 · 15:42',
     description: 'Documented the expected GitHub and Google API response contracts.',
     added: 88,
@@ -109,6 +116,7 @@ const MOCK_COMMITS = [
     type: 'POLISH',
     title: 'Refine commit detail cards',
     hash: '34aff80',
+    fullHash: '34aff80',
     date: 'Jul 25, 2026 · 07:16',
     description: 'Improved hover feedback, change statistics, and information hierarchy.',
     added: 142,
@@ -119,6 +127,7 @@ const MOCK_COMMITS = [
     type: 'SHIP',
     title: 'Complete Beneath the Ocean',
     hash: 'f41ea77',
+    fullHash: 'f41ea77',
     date: 'Jul 25, 2026 · 08:55',
     description: 'Final polish for the two-page Commit Diver frontend experience.',
     added: 219,
@@ -127,9 +136,10 @@ const MOCK_COMMITS = [
   }
 ];
 
-// Sea creature glyphs used to mark each commit bubble. Cycled
-// through by index so consecutive commits don't repeat the same animal.
-const ANIMAL_MARKS = ['🐠', '🐡', '🦑', '🐙', '🦀', '🐟', '🐢', '🦐', '🐬', '🪼', '🦈', '🐳'];
+// Sea creature glyphs used to mark each commit bubble.
+const ANIMAL_MARKS = ['🐠', '🐡', '🦑', '🐙', '🦀', '🐟', '🐢', '🦐', '🐬', '🪼', 'SHARK', '🐳'];
+
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // =============================================================
 // State & DOM helpers
@@ -139,6 +149,7 @@ const $ = selector => document.querySelector(selector);
 let commits = [];
 let diverSrc = 'assets/female.png';
 let scrollObserver;
+let currentRepoId = null;
 
 // =============================================================
 // Diver picker (repo gate screen)
@@ -152,10 +163,71 @@ document.querySelectorAll('.diver-picker button').forEach(button => {
 });
 
 // =============================================================
-// Repository form
+// Repository form & Backend API integration
 // =============================================================
 async function fetchRepositoryCommits(repoUrl) {
-  await new Promise(resolve => setTimeout(resolve, 650));
+  try {
+    // 1. Validate repository
+    const valRes = await fetch(`${API_BASE_URL}/repos/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: repoUrl }),
+    });
+
+    if (!valRes.ok) {
+      const errJson = await valRes.json().catch(() => ({}));
+      throw new Error(errJson.error?.message || 'Failed to validate repository URL');
+    }
+
+    // 2. Clone repository / retrieve session repoId
+    const cloneRes = await fetch(`${API_BASE_URL}/repos/clone`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: repoUrl }),
+    });
+
+    if (!cloneRes.ok) {
+      const errJson = await cloneRes.json().catch(() => ({}));
+      throw new Error(errJson.error?.message || 'Failed to prepare repository');
+    }
+
+    const cloneData = await cloneRes.json();
+    currentRepoId = cloneData.data.repoId;
+
+    // 3. Fetch parsed commits
+    const commitsRes = await fetch(`${API_BASE_URL}/repos/${currentRepoId}/commits?limit=50`);
+    if (commitsRes.ok) {
+      const commitsData = await commitsRes.json();
+      const fetchedCommits = commitsData.data?.commits || [];
+
+      if (fetchedCommits.length > 0) {
+        return fetchedCommits.map(c => {
+          const msg = c.message || 'Commit';
+          const type = msg.startsWith('feat') ? 'FEATURE'
+            : msg.startsWith('fix') ? 'FIX'
+            : msg.startsWith('docs') ? 'DOCS'
+            : msg.startsWith('refactor') ? 'REFACTOR'
+            : msg.startsWith('chore') ? 'CHORE'
+            : 'COMMIT';
+
+          return {
+            type,
+            title: msg.split('\n')[0],
+            hash: c.shortHash || c.hash.substring(0, 7),
+            fullHash: c.hash,
+            date: c.date ? new Date(c.date).toLocaleString() : 'Recent',
+            description: msg,
+            added: c.additions || 0,
+            removed: c.deletions || 0,
+            files: c.files && c.files.length > 0 ? c.files : ['Repository files'],
+          };
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('Backend connection failed, falling back to demo mode:', err.message);
+  }
+
   return MOCK_COMMITS;
 }
 
@@ -189,6 +261,7 @@ $('#changeRepo').addEventListener('click', () => {
   $('#expedition').hidden = true;
   $('#repoGate').hidden = false;
   $('#repoError').textContent = '';
+  currentRepoId = null;
   scrollTo({ top: 0, behavior: 'smooth' });
 });
 
@@ -201,7 +274,7 @@ function commitBubbleMarkup(commit, index) {
   const fileItems = commit.files.map(file => `<li>${file}</li>`).join('');
 
   return `
-    <article class="commit-bubble minimal-bubble ${side}" data-index="${index}" tabindex="0" aria-label="${commit.title}. Hover for details.">
+    <article class="commit-bubble minimal-bubble ${side}" data-index="${index}" data-hash="${commit.fullHash || commit.hash}" tabindex="0" aria-label="${commit.title}. Hover for details.">
       <div class="title-circle">
         <h3>${commit.title}</h3>
       </div>
@@ -232,8 +305,7 @@ function renderDescent() {
   watchCommitBubbles();
 }
 
-// Tracks which commit bubble is currently in view and updates the
-// depth readout / progress rail as the person scrolls.
+// Tracks which commit bubble is currently in view
 function watchCommitBubbles() {
   scrollObserver?.disconnect();
 
@@ -258,11 +330,26 @@ function watchCommitBubbles() {
 }
 
 // =============================================================
-// Gemini summary
-// FRONTEND INTEGRATION POINT: send `commits` to your backend,
-// which safely calls Gemini.
+// Gemini summary API integration
 // =============================================================
 async function summarizeWithGemini(commitHistory) {
+  if (currentRepoId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/repos/${currentRepoId}/summary`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data?.summary) {
+          return json.data.summary;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch Gemini summary from backend:', err.message);
+    }
+  }
+
   await new Promise(resolve => setTimeout(resolve, 900));
   return `Across ${commitHistory.length} commits, this project evolved from its initial foundation into an interactive GitHub journey. The work focused on repository exploration, pixel-art ocean design, accessible swim navigation, detailed change inspection, and a prepared Gemini summary flow.`;
 }
