@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
@@ -7,6 +8,14 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': 'http://localhost:4000'
+    }
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        explorer: resolve(__dirname, 'explorer.html')
+      }
     }
   }
 })
