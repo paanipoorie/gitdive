@@ -1,5 +1,5 @@
 const db = require('../db');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -91,6 +91,14 @@ function getCachedCommits(repoId, { page = 1, limit = 30 } = {}) {
 }
 
 function saveCommits(repoId, commits) {
+  const repoCheck = db.prepare('SELECT id FROM repos WHERE id = ?').get(repoId);
+  if (!repoCheck) {
+    db.prepare(`
+      INSERT OR IGNORE INTO repos (id, owner, name, full_name, url, default_branch, size, temp_path, updated_at)
+      VALUES (?, 'local', ?, ?, ?, 'main', 0, NULL, ?)
+    `).run(repoId, repoId, repoId, `local://${repoId}`, Date.now());
+  }
+
   const deleteStmt = db.prepare('DELETE FROM commits WHERE repo_id = ?');
   const insertStmt = db.prepare(`
     INSERT INTO commits (id, repo_id, hash, short_hash, author_name, author_email, date, message, parents, branches, files, additions, deletions, created_at)
@@ -130,6 +138,14 @@ function getCachedSummary(repoId, commitHash = 'OVERALL') {
 }
 
 function saveSummary(repoId, commitHash = 'OVERALL', summary) {
+  const repoCheck = db.prepare('SELECT id FROM repos WHERE id = ?').get(repoId);
+  if (!repoCheck) {
+    db.prepare(`
+      INSERT OR IGNORE INTO repos (id, owner, name, full_name, url, default_branch, size, temp_path, updated_at)
+      VALUES (?, 'local', ?, ?, ?, 'main', 0, NULL, ?)
+    `).run(repoId, repoId, repoId, `local://${repoId}`, Date.now());
+  }
+
   const stmt = db.prepare(`
     INSERT INTO ai_summaries (id, repo_id, commit_hash, summary, created_at)
     VALUES (?, ?, ?, ?, ?)
