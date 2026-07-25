@@ -1313,16 +1313,61 @@ footer a {
 }
 
 /* AI Summary memory box inside the expanded bubble */
-.capsule-ai-box {
+.capsule-ai-container {
   margin-top: 8px;
-  background: radial-gradient(circle at top left, rgba(120, 90, 220, 0.25), rgba(6, 26, 60, 0.95));
-  border: 1px solid rgba(138, 110, 235, 0.6);
-  box-shadow: inset 0 0 15px rgba(138, 110, 235, 0.18);
-  border-radius: 16px;
-  padding: 14px 18px;
 }
 
-.ai-box-title {
+.capsule-ai-box {
+  background: radial-gradient(circle at top left, rgba(120, 90, 220, 0.25), rgba(6, 26, 60, 0.95));
+  border: 1px solid rgba(138, 110, 235, 0.5);
+  box-shadow: inset 0 0 15px rgba(138, 110, 235, 0.15);
+  border-radius: 16px;
+  padding: 14px 18px;
+  transition: all 0.2s ease;
+}
+
+.ai-box-idle {
+  background: rgba(8, 30, 65, 0.5);
+  border: 1px dashed rgba(138, 110, 235, 0.4);
+  padding: 10px;
+  text-align: center;
+}
+
+.ai-explain-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(110, 80, 220, 0.4), rgba(40, 140, 180, 0.4));
+  border: 1px solid rgba(150, 130, 245, 0.6);
+  border-radius: 10px;
+  color: #e4dcff;
+  font-family: "Press Start 2P";
+  font-size: 7px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(80, 50, 180, 0.2);
+}
+
+.ai-explain-btn:hover {
+  background: linear-gradient(135deg, rgba(130, 95, 245, 0.6), rgba(50, 170, 210, 0.6));
+  color: #ffffff;
+  border-color: #bfaaff;
+  box-shadow: 0 0 18px rgba(160, 130, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.ai-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.ai-title-left {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1333,14 +1378,37 @@ footer a {
 
 .ai-star-sparkle {
   color: #ccaaff;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.ai-regenerate-btn {
+  background: transparent;
+  border: 1px solid rgba(175, 155, 255, 0.4);
+  color: #bba7ff;
+  font-family: "Space Mono", monospace;
+  font-size: 8px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ai-regenerate-btn:hover {
+  background: rgba(138, 110, 235, 0.25);
+  color: #ffffff;
+  border-color: #ccaaff;
 }
 
 .ai-summary-body {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   font-size: 10px;
   line-height: 1.75;
   color: #dbe8ff;
+}
+
+.ai-box-loading {
+  background: rgba(9, 28, 62, 0.8);
+  border-color: rgba(150, 130, 245, 0.5);
 }
 
 .ai-loading-pulse {
@@ -1349,7 +1417,16 @@ footer a {
   gap: 10px;
   font-size: 9px;
   color: #b8abff;
-  margin-top: 8px;
+}
+
+.spinner {
+  display: inline-block;
+  animation: spin 2s linear infinite;
+  color: #ccaaff;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
 }
 
 .pulse-dots {
@@ -1364,6 +1441,36 @@ footer a {
   border-radius: 50%;
   background: #b8abff;
   box-shadow: 0 0 8px #b8abff;
+}
+
+.ai-box-error {
+  background: rgba(50, 15, 30, 0.7);
+  border: 1px solid rgba(240, 90, 110, 0.6);
+}
+
+.ai-error-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #ffa4b0;
+}
+
+.ai-retry-btn {
+  background: rgba(220, 60, 80, 0.3);
+  border: 1px solid rgba(250, 100, 120, 0.6);
+  color: #ffffff;
+  font-family: "Press Start 2P";
+  font-size: 6px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ai-retry-btn:hover {
+  background: rgba(240, 80, 100, 0.5);
+  border-color: #ffb8c2;
 }
 
 .inspecting-indicator {

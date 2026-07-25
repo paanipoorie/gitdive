@@ -148,6 +148,13 @@ export default function ExplorerApp() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [activeCommitIndex, setActiveCommitIndex] = useState(0);
+  const [summaryCache, setSummaryCache] = useState({});
+
+  const handleSaveSummary = (sha, text) => {
+    if (sha && text) {
+      setSummaryCache((prev) => ({ ...prev, [sha]: text }));
+    }
+  };
 
   const containerRef = useRef(null);
   const observerRef = useRef(null);
@@ -334,15 +341,20 @@ export default function ExplorerApp() {
             />
 
             <div className="commit-bubbles" id="commitBubbles">
-              {commits.map((commit, idx) => (
-                <CommitBubble
-                  key={commit.fullHash || idx}
-                  commit={commit}
-                  index={idx}
-                  isActive={idx === activeCommitIndex}
-                  currentRepoId={currentRepoId}
-                />
-              ))}
+              {commits.map((commit, idx) => {
+                const sha = commit.fullHash || commit.hash;
+                return (
+                  <CommitBubble
+                    key={sha || idx}
+                    commit={commit}
+                    index={idx}
+                    isActive={idx === activeCommitIndex}
+                    currentRepoId={currentRepoId}
+                    cachedSummary={summaryCache[sha]}
+                    onSaveSummary={handleSaveSummary}
+                  />
+                );
+              })}
             </div>
 
             <div className="descent-start">

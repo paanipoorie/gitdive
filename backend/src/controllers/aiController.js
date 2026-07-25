@@ -36,7 +36,8 @@ async function getCommitDetail(req, res, next) {
       throw err;
     }
 
-    let summary = getCachedSummary(repoId, hash);
+    const refresh = req.query.refresh === 'true' || req.body?.refresh === true;
+    let summary = !refresh ? getCachedSummary(repoId, hash) : null;
     if (!summary) {
       summary = await generateCommitSummary(commitData);
       saveSummary(repoId, hash, summary);

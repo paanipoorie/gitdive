@@ -14,6 +14,7 @@ router.get('/:repoId/commits', getRepoCommits);
 router.get('/:repoId/timeline', getRepoTimeline);
 router.get('/:repoId/stats', getRepoStats);
 router.get('/:repoId/commits/:hash/detail', aiLimiter, getCommitDetail);
+router.post('/:repoId/commits/:hash/summary', aiLimiter, getCommitDetail);
 router.get('/:repoId/summary', aiLimiter, getRepoSummary);
 router.post('/:repoId/summary', aiLimiter, getRepoSummary);
 

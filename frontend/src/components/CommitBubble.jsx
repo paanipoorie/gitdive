@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const ANIMAL_MARKS = ['🐠', '🐡', '🦑', '🐙', '🦀', '🐟', '🐢', '🦐', '🐬', '🪼', '🦈', '🐳'];
+const ANIMAL_MARKS = ['🐠', '🐡', '🦑', '🐙', 'crab', '🐟', '🐢', '🦐', '🐬', '🪼', '🦈', '🐳'];
 
 const springTransition = {
   type: 'spring',
@@ -36,63 +36,73 @@ const childVariants = {
   },
 };
 
-export default function CommitBubble({ commit, index, isActive, currentRepoId }) {
-  const [summary, setSummary] = useState(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
+export default function CommitBubble({
+  commit,
+  index,
+  isActive,
+  currentRepoId,
+  cachedSummary,
+  onSaveSummary,
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [localSummary, setLocalSummary] = useState(null);
+
+  const sha = commit.fullHash || commit.hash;
+  const activeSummary = cachedSummary || localSummary;
 
   const sideClass = index % 2 === 0 ? 'bubble-left' : 'bubble-right';
   const animalMark = ANIMAL_MARKS[index % ANIMAL_MARKS.length];
 
-  useEffect(() => {
-    let isMounted = true;
+  const handleFetchSummary = async (forceRefresh = false) => {
+    if (loading) return;
+    setLoading(true);
+    setError(false);
 
-    if (isActive && !summary && !summaryLoading) {
-      setSummaryLoading(true);
+    try {
+      let resultSummary = null;
 
-      const fetchDetail = async () => {
-        let aiSummary = null;
+      if (currentRepoId && sha) {
+        const url = `/api/repos/${currentRepoId}/commits/${sha}/summary`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh: forceRefresh }),
+        });
 
-        if (currentRepoId && commit.fullHash) {
-          try {
-            const res = await fetch(`/api/repos/${currentRepoId}/commits/${commit.fullHash}/detail`);
-            if (res.ok) {
-              const json = await res.json();
-              if (json.data?.summary) {
-                aiSummary = json.data.summary;
-              }
-            }
-          } catch (e) {
-            console.warn('Backend detail fetch failed, fallback to mock AI summary:', e);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data?.summary) {
+            resultSummary = json.data.summary;
           }
         }
+      }
 
-        if (!aiSummary) {
-          // Simulate AI processing delay for demo / mock mode
-          await new Promise((resolve) => setTimeout(resolve, 850));
-          aiSummary = `This commit (${commit.hash}) introduced ${commit.title.toLowerCase()}. It modified ${
-            commit.files.length
-          } file(s) including ${commit.files.slice(0, 2).join(', ')}, refining the code structure and application flow.`;
-        }
+      if (!resultSummary) {
+        // Fallback for demo / mock mode without backend connection
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        resultSummary = `This commit introduced ${commit.title.toLowerCase()}. It updated ${
+          commit.files.length
+        } file(s) including ${commit.files.slice(0, 2).join(', ')}, refining codebase quality and overall app execution.`;
+      }
 
-        if (isMounted) {
-          setSummary(aiSummary);
-          setSummaryLoading(false);
-        }
-      };
-
-      fetchDetail();
+      setLocalSummary(resultSummary);
+      if (onSaveSummary) {
+        onSaveSummary(sha, resultSummary);
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to generate commit summary:', err);
+      setError(true);
+      setLoading(false);
     }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isActive, summary, summaryLoading, currentRepoId, commit]);
+  };
 
   return (
     <motion.article
       className={`framer-commit-bubble ${sideClass} ${isActive ? 'is-active-capsule' : ''}`}
       data-index={index}
-      data-hash={commit.fullHash || commit.hash}
+      data-hash={sha}
       layout
       transition={springTransition}
       animate={{
@@ -179,32 +189,77 @@ export default function CommitBubble({ commit, index, isActive, currentRepoId })
               </div>
             </motion.div>
 
-            <motion.div className="capsule-ai-box" variants={childVariants}>
-              <div className="ai-box-title">
-                <span className="ai-star-sparkle">✦</span>
-                <span>AI COMMIT MEMORY</span>
-              </div>
-
-              {summaryLoading ? (
-                <div className="ai-loading-pulse">
-                  <span className="pulse-text">Analyzing commit with Gemini AI...</span>
-                  <div className="pulse-dots">
-                    <motion.span
-                      animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
-                      transition={{ repeat: Infinity, duration: 0.9, delay: 0 }}
-                    />
-                    <motion.span
-                      animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
-                      transition={{ repeat: Infinity, duration: 0.9, delay: 0.2 }}
-                    />
-                    <motion.span
-                      animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
-                      transition={{ repeat: Infinity, duration: 0.9, delay: 0.4 }}
-                    />
+            {/* Explicit On-Demand AI Summary Section */}
+            <motion.div className="capsule-ai-container" variants={childVariants}>
+              {activeSummary ? (
+                <motion.div
+                  className="capsule-ai-box ai-box-done"
+                  initial={{ opacity: 0, y: 8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  transition={{ type: 'spring', stiffness: 240, damping: 24 }}
+                >
+                  <div className="ai-box-header">
+                    <div className="ai-title-left">
+                      <span className="ai-star-sparkle">✦</span>
+                      <span>GEMINI AI INSIGHT</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="ai-regenerate-btn"
+                      onClick={() => handleFetchSummary(true)}
+                      disabled={loading}
+                      title="Generate a fresh summary from Gemini"
+                    >
+                      {loading ? 'Analyzing…' : '✨ Regenerate'}
+                    </button>
+                  </div>
+                  <p className="ai-summary-body">{activeSummary}</p>
+                </motion.div>
+              ) : loading ? (
+                <div className="capsule-ai-box ai-box-loading">
+                  <div className="ai-loading-pulse">
+                    <span className="pulse-icon spinner">✦</span>
+                    <span className="pulse-text">Analyzing with Gemini...</span>
+                    <div className="pulse-dots">
+                      <motion.span
+                        animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.8, delay: 0 }}
+                      />
+                      <motion.span
+                        animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.8, delay: 0.2 }}
+                      />
+                      <motion.span
+                        animate={{ opacity: [0.3, 1, 0.3], y: [0, -4, 0] }}
+                        transition={{ repeat: Infinity, duration: 0.8, delay: 0.4 }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="capsule-ai-box ai-box-error">
+                  <div className="ai-error-content">
+                    <span>⚠️ Couldn't generate a summary.</span>
+                    <button
+                      type="button"
+                      className="ai-retry-btn"
+                      onClick={() => handleFetchSummary(false)}
+                    >
+                      Retry
+                    </button>
                   </div>
                 </div>
               ) : (
-                <p className="ai-summary-body">{summary}</p>
+                <div className="capsule-ai-box ai-box-idle">
+                  <button
+                    type="button"
+                    className="ai-explain-btn"
+                    onClick={() => handleFetchSummary(false)}
+                  >
+                    <span className="ai-sparkle-icon">✨</span>
+                    <span>Explain this Commit</span>
+                  </button>
+                </div>
               )}
             </motion.div>
           </motion.div>
